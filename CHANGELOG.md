@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 2026-09-01
+
+- Added bounded extraction of Flate-compressed PDF text streams when Poppler is
+  not present in the ephemeral sandbox.
+- Verified the path against the real Solari sandbox with a synthetic,
+  compressed one-page PDF.
+
 ## 0.2.0 - 2026-09-01
 
 - Added a real, non-submitting document-verification vertical slice.

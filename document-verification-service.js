@@ -84,7 +84,7 @@ function makeChecklist(extraction) {
 // The extraction code is held as data and has no connection to uploaded text.
 // It uses only the random guest path passed as an argv value; no shell is used.
 const extractorProgram = String.raw`
-import json, re, struct, sys
+import json, re, shutil, struct, subprocess, sys, zlib
 
 path, expected = sys.argv[1], sys.argv[2]
 data = open(path, "rb").read()
@@ -115,6 +115,34 @@ def jpeg_size(value):
         index += length
     return None
 
+def literal_fragments(value):
+    fragments = []
+    direct = re.findall(br"\((?:\\.|[^\\()]){1,600}\)\s*(?:Tj|')", value)
+    arrays = re.findall(br"\[.{0,3000}?\]\s*TJ", value, re.S)
+    for literal in direct + [item for array in arrays for item in re.findall(br"\((?:\\.|[^\\()]){1,600}\)", array)]:
+        decoded = re.sub(br"\\([()\\])", br"\1", literal).decode("latin-1", "ignore")
+        decoded = re.sub(r"\s+", " ", decoded).strip()
+        if decoded: fragments.append(decoded)
+    return fragments
+
+def flate_text_streams(value):
+    # Keep decompression bounded. A small compressed file must not expand into
+    # unbounded work or memory inside the sandbox.
+    streams = []
+    pattern = re.compile(br"<<.{0,4096}?/FlateDecode.{0,4096}?>>\s*stream\r?\n(.{0,1048576}?)\r?\nendstream", re.S)
+    for match in pattern.finditer(value):
+        try:
+            decoder = zlib.decompressobj()
+            expanded = decoder.decompress(match.group(1), 250001)
+            if decoder.unconsumed_tail or len(expanded) > 250000:
+                continue
+            expanded += decoder.flush(250001 - len(expanded))
+            if len(expanded) <= 250000:
+                streams.append(expanded)
+        except zlib.error:
+            continue
+    return streams
+
 actual = signature(data)
 if actual != expected:
     raise ValueError("signature changed before extraction")
@@ -129,16 +157,35 @@ elif actual == "jpeg":
     if not size: raise ValueError("invalid JPEG structure")
     result["metadata"] = {"width": size[0], "height": size[1]}
 else:
-    # This conservative, dependency-free reader extracts simple literal PDF
-    # text and document metadata. Compressed/scanned PDFs remain unknown.
+    # Prefer Poppler when it exists in the sandbox. It can read normal
+    # compressed text streams without needing a network install.
     page_count = len(re.findall(br"/Type\s*/Page\b", data))
-    literals = re.findall(br"\((?:\\.|[^\\()]){1,600}\)\s*(?:Tj|')", data)
-    fragments = []
-    for literal in literals:
-        value = re.sub(br"\\([()\\])", br"\1", literal).decode("latin-1", "ignore")
-        value = re.sub(r"\s+", " ", value).strip()
-        if value: fragments.append(value)
-    text = " ".join(fragments)[:6000]
+    text, text_method = "", "none"
+    converter = shutil.which("pdftotext")
+    if converter:
+        try:
+            converted = subprocess.run(
+                [converter, "-f", "1", "-l", "25", "-layout", path, "-"],
+                capture_output=True,
+                check=False,
+                timeout=10,
+            )
+            if converted.returncode == 0:
+                text = converted.stdout.decode("utf-8", "ignore").strip()[:6000]
+                if text: text_method = "pdftotext"
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+
+    # This conservative, dependency-free fallback handles simple PDFs when
+    # Poppler is unavailable. Compressed/scanned PDFs remain unknown.
+    if not text:
+        fragments = literal_fragments(data)
+        text = " ".join(fragments)[:6000]
+        if text: text_method = "literal"
+    if not text:
+        fragments = [fragment for stream in flate_text_streams(data) for fragment in literal_fragments(stream)]
+        text = " ".join(fragments)[:6000]
+        if text: text_method = "flate-literal"
     metadata = {"pageCount": page_count if page_count else None}
     for key, label in ((b"Title", "title"), (b"Author", "author"), (b"Producer", "producer")):
         match = re.search(br"/" + key + br"\s*\((?:\\.|[^\\()]){0,200}\)", data)
@@ -148,6 +195,7 @@ else:
     result["metadata"] = metadata
     result["textAvailable"] = bool(text)
     result["text"] = text
+    result["textMethod"] = text_method
 
 print(json.dumps(result, separators=(",", ":")))
 `
@@ -167,6 +215,7 @@ function validateExtraction(value, expectedFormat, expectedBytes) {
     bytes: value.bytes,
     textAvailable: Boolean(value.textAvailable),
     text: String(value.text || "").slice(0, 6000),
+    textMethod: ["pdftotext", "literal", "flate-literal", "none"].includes(value.textMethod) ? value.textMethod : "none",
     metadata: value.metadata && typeof value.metadata === "object" ? value.metadata : {}
   }
 }
@@ -211,7 +260,8 @@ async function runDocumentVerification({ apiKey, bytes }) {
       mediaType: formats[format].mediaType,
       bytes: extraction.bytes,
       metadata: extraction.metadata,
-      textExtracted: extraction.textAvailable
+      textExtracted: extraction.textAvailable,
+      textMethod: extraction.textMethod
     },
     source: requirementSet.source,
     requirementVersion: requirementSet.version,

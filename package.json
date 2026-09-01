@@ -1,6 +1,6 @@
 {
   "name": "civra",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "private": true,
   "scripts": {
     "check": "node --check server.js && node --check solari-service.js && node --check document-verification-service.js && node --check permit-requirements.js && node --check public/app.js && node --check ui-tests.js && npm test",

@@ -43,8 +43,9 @@ worse than no answer.
 - A protected document route accepts a PDF, JPEG, or PNG up to 10 MB, checks
   its magic bytes before any extraction, and verifies those bytes a second time
   in an ephemeral Solari sandbox.
-- The sandbox extracts conservative PDF literal text and basic PDF/image
-  metadata, then matches that evidence against a versioned permit requirement
+- The sandbox extracts PDF text with its local Poppler reader when available,
+  with a conservative bounded Flate/literal fallback, plus basic PDF/image
+  metadata. It matches that evidence against a versioned permit requirement
   set. Scanned PDFs and images without safely extracted text are unknown.
 - The original upload is never written to the Civra host filesystem. The
   sandbox is destroyed after every attempt, deleting its temporary file.

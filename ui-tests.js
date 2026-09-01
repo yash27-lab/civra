@@ -99,7 +99,8 @@ test("an unlocked owner can verify a document and review its evidence", async ()
           mediaType: "application/pdf",
           bytes: 37,
           metadata: { pageCount: 1 },
-          textExtracted: true
+          textExtracted: true,
+          textMethod: "flate-literal"
         },
         source: {
           url: "https://example.com/official",
@@ -139,6 +140,7 @@ test("an unlocked owner can verify a document and review its evidence", async ()
   assert.equal(documentCall.options.headers["X-Civra-Action"], "document-check")
   assert.equal(documentCall.options.headers["Content-Type"], "application/octet-stream")
   assert.match(document.querySelector("#documentReport").textContent, /Food Protection Certificate/)
+  assert.match(document.querySelector("#documentReport").textContent, /flate-literal/)
   assert.match(document.querySelector("#documentReport").textContent, /original file was processed/i)
   assert.equal(document.querySelector("#ownerFile").value, "")
 

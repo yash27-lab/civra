@@ -26,7 +26,9 @@ requirements. It never submits or pays.
    from their bytes, not the browser MIME value.
 4. A fresh Solari sandbox receives the validated bytes at a random guest path.
 5. The sandbox validates the signature again, extracts basic image dimensions
-   or conservative PDF metadata/literal text, and returns bounded JSON.
+   or PDF metadata/text with its local Poppler reader when available. A
+   conservative literal-text fallback, including bounded Flate streams, avoids
+   a network package install.
 6. Civra matches extracted text to the versioned requirements. It reports
    ready, missing, or unknown with a reason and evidence where available.
 7. Civra destroys the sandbox in a finally block. The upload is not written to

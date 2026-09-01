@@ -8,6 +8,8 @@
 - The Civra host holds upload bytes in request memory only. It does not create
   a local upload directory or log document contents.
 - Every sandbox is ephemeral and destroyed even when extraction fails.
+- PDF extraction uses software already present in the sandbox and never
+  downloads a parser or uploads the file to another service.
 - Unsupported, malformed, scanned, or non-searchable files return unknown or a
   safe error; Civra does not guess.
 

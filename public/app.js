@@ -188,6 +188,7 @@ function showDocumentResult(result) {
   appendDetail(documentMetadata, "File type", documentInfo.mediaType || "unknown")
   appendDetail(documentMetadata, "File size", String(documentInfo.bytes || 0) + " bytes")
   appendDetail(documentMetadata, "Searchable text", documentInfo.textExtracted ? "extracted" : "not safely available")
+  if (documentInfo.textMethod && documentInfo.textMethod !== "none") appendDetail(documentMetadata, "Text method", documentInfo.textMethod)
   for (const [key, value] of Object.entries(documentInfo.metadata || {})) {
     if (value !== null && value !== "") appendDetail(documentMetadata, key, value)
   }
