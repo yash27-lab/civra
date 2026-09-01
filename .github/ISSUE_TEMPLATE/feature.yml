@@ -1,0 +1,23 @@
+name: Product or safety idea
+description: Propose a focused Civra improvement.
+title: "Idea: "
+labels: [idea]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Owner problem
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Does this introduce an external action?
+      options:
+        - No
+        - File processing
+        - Sign in
+        - Payment
+        - Final submission
+    validations:
+      required: true

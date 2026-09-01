@@ -1,0 +1,20 @@
+{
+  "name": "civra",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check": "node --check server.js && node --check solari-service.js && node --check document-verification-service.js && node --check permit-requirements.js && node --check public/app.js && node --check ui-tests.js && npm test",
+    "start": "node server.js",
+    "test": "node --test tests.js ui-tests.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@solarisdk/browser": "^0.1.1",
+    "@solarisdk/sdk": "^0.1.2"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}

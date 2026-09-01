@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Civra</title>
+  <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+  <aside class="side">
+    <a class="brand" href="#">Civra<span>.</span></a>
+    <nav>
+      <button class="nav active" data-page="home"><span>01</span> Home</button>
+      <button class="nav" data-page="permits"><span>02</span> Permits</button>
+      <button class="nav" data-page="files"><span>03</span> Files</button>
+      <button class="nav" data-page="history"><span>04</span> History</button>
+    </nav>
+    <div class="help">
+      <div class="helpmark">?</div>
+      <p>Need help?</p>
+      <small>We can guide you at any step.</small>
+      <button id="helpButton">Show me how</button>
+    </div>
+    <div class="person">
+      <div class="avatar">MN</div>
+      <div><strong>Maya's Kitchen</strong><small>New York, NY</small></div>
+    </div>
+  </aside>
+
+  <main>
+    <header>
+      <div><p class="eyebrow">MONDAY, AUGUST 31</p><h1>Good afternoon, Maya.</h1></div>
+      <button class="add" id="addPermit">Add a permit</button>
+    </header>
+
+    <section class="notice">
+      <div class="ring"><span>21</span><small>days</small></div>
+      <div class="noticecopy">
+        <p class="eyebrow light">NEXT STEP</p>
+        <h2>Your food permit needs care soon.</h2>
+        <p>Civra found the right city page. Verify one permit document, then review the evidence.</p>
+      </div>
+      <button class="open" id="openFlow">Open task</button>
+    </section>
+
+    <section class="proof" id="proofCard">
+      <div class="proofmark">LIVE</div>
+      <div class="grow">
+        <p class="eyebrow">REAL SOLARI PROOF</p>
+        <h3>Live city check passed.</h3>
+        <p id="proofSummary">Loading the saved proof from the real Solari run.</p>
+      </div>
+      <a id="proofSource" href="https://nyc-business.nyc.gov/nycbusiness/description/food-service-establishment-permit" target="_blank" rel="noreferrer">View city source</a>
+    </section>
+
+    <section class="story">
+      <article>
+        <p class="eyebrow">THE PROBLEM</p>
+        <h3>Permit work is hard to follow.</h3>
+        <p>Small business owners must search many city pages, read long forms, find old files, and remember due dates. One missed step can stop the business from working.</p>
+      </article>
+      <article>
+        <p class="eyebrow">OUR ANSWER</p>
+        <h3>Civra keeps every step clear.</h3>
+        <p>Civra finds the right page, verifies permit documents, fills known facts, and shows what is missing. The owner checks everything before payment or final send.</p>
+      </article>
+      <article>
+        <p class="eyebrow">MADE WITH SOLARI</p>
+        <h3>Safe tools do the busy work.</h3>
+        <p>Solari opens city pages, checks document bytes in a private work space, and saves a clear record of each visit.</p>
+        <form class="accessform" id="accessForm">
+          <label for="accessCode">Civra access code</label>
+          <div><input id="accessCode" type="password" autocomplete="current-password" required><button type="submit">Unlock</button></div>
+        </form>
+        <button class="livecheck" id="liveCheck" disabled>Run live city check</button>
+        <button class="signout" id="signOut" type="button" hidden>Lock live check</button>
+        <small class="livestatus" id="liveStatus" aria-live="polite">Unlock before using the paid Solari check.</small>
+      </article>
+    </section>
+
+    <section class="security" id="securityCard">
+      <div>
+        <p class="eyebrow">SAFETY FIRST</p>
+        <h3>Your files and choices stay under your control.</h3>
+      </div>
+      <div class="securityitem"><span>01</span><p><strong>No city upload</strong><small>Civra never sends your document to a city site from this flow.</small></p></div>
+      <div class="securityitem"><span>02</span><p><strong>Ephemeral work space</strong><small>Files are checked in a separate Solari sandbox, then that sandbox is destroyed.</small></p></div>
+      <div class="securityitem"><span>03</span><p><strong>You approve</strong><small>Civra cannot pay or send a final form without your choice.</small></p></div>
+    </section>
+
+    <section class="grid">
+      <article class="card permits" id="permitsCard" tabindex="-1">
+        <div class="cardtop"><div><p class="eyebrow">YOUR PERMITS</p><h3>Three are safe. One needs care.</h3></div><button id="viewPermits">View all</button></div>
+        <div class="permitrow urgent">
+          <div class="icon">FP</div><div class="grow"><strong>Food Service Permit</strong><span>Ends September 21, 2026</span></div><span class="pill">Needs care</span>
+        </div>
+        <div class="permitrow">
+          <div class="icon pale">ST</div><div class="grow"><strong>Sales Tax Permit</strong><span>Active</span></div><span class="pill safe">Ready</span>
+        </div>
+        <div class="permitrow">
+          <div class="icon pale">FH</div><div class="grow"><strong>Food Handler Card</strong><span>Ends June 14, 2027</span></div><span class="pill safe">Ready</span>
+        </div>
+      </article>
+
+      <article class="card trust">
+        <p class="eyebrow">YOU STAY IN CHARGE</p>
+        <h3>Civra never sends or pays without you.</h3>
+        <div class="rule"><span>1</span><p><strong>We find and fill</strong><small>Civra gets the right pages and adds your saved facts.</small></p></div>
+        <div class="rule"><span>2</span><p><strong>You check every answer</strong><small>Each answer shows where it came from.</small></p></div>
+        <div class="rule"><span>3</span><p><strong>You choose when to send</strong><small>Payment and final send always wait for you.</small></p></div>
+      </article>
+    </section>
+
+    <section class="recent" id="historyCard" tabindex="-1">
+      <div class="cardtop"><div><p class="eyebrow">RECENT WORK</p><h3>A clear record of every step.</h3></div><button id="viewHistory">View history</button></div>
+      <div class="historyrow"><span class="dot done"></span><div class="grow"><strong>City page checked</strong><small>Food Service Permit</small></div><time>Today, 2:42 PM</time><span class="pill safe">Done</span></div>
+      <div class="historyrow"><span class="dot done"></span><div class="grow"><strong>Business facts checked</strong><small>12 answers came from your saved files</small></div><time>Today, 2:43 PM</time><span class="pill safe">Done</span></div>
+      <div class="historyrow"><span class="dot wait"></span><div class="grow"><strong>Permit document needs verification</strong><small>Upload a PDF, JPG, or PNG to review source-backed evidence</small></div><time>Waiting for you</time><span class="pill">Needed</span></div>
+    </section>
+  </main>
+
+  <div class="sheet" id="sheet" aria-hidden="true">
+    <div class="shade" id="closeFlow"></div>
+    <section class="panel">
+      <button class="close" id="closeButton">Close</button>
+      <p class="eyebrow">FOOD SERVICE PERMIT</p>
+      <h2>Verify a permit document.</h2>
+      <p class="lead">Civra checks the actual file signature before reading basic text or image metadata in an ephemeral sandbox. It will not submit your file.</p>
+      <div class="check"><span class="checkmark">✓</span><div><strong>Business name</strong><p>Maya's Kitchen</p><small>From your business file</small></div></div>
+      <div class="check"><span class="checkmark">✓</span><div><strong>Business address</strong><p>128 Orchard Street, New York, NY</p><small>From your lease</small></div></div>
+      <label class="upload" for="ownerFile">
+        <span class="uploadmark">+</span>
+        <strong>Add a permit document</strong>
+        <small>PDF, JPG, or PNG · 10 MB maximum</small>
+      </label>
+      <input id="ownerFile" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+      <div class="fileok" id="fileOk"></div>
+      <button class="continue" id="continueButton" disabled>Verify document</button>
+      <section class="documentreport" id="documentReport" aria-live="polite" hidden>
+        <p class="eyebrow">EVIDENCE-BACKED RESULT</p>
+        <h3 id="documentTitle">Document checked</h3>
+        <p id="documentSummary"></p>
+        <dl id="documentMetadata"></dl>
+        <div id="documentChecklist"></div>
+        <small id="documentRetention"></small>
+      </section>
+      <p class="stop">Unlock live checks before verifying a document. Civra will stop before payment or final send.</p>
+    </section>
+  </div>
+
+  <div class="guide" id="guide" aria-hidden="true">
+    <div class="guidebox">
+      <button class="close" id="closeGuide">Close</button>
+      <p class="eyebrow">HOW TO USE CIVRA</p>
+        <div class="tourprogress"><span class="tourbar1" id="tourBar"></span></div>
+      <p class="tourcount" id="tourCount">Step 1 of 6</p>
+      <div class="tourbody" aria-live="polite">
+        <div class="touricon" id="tourIcon">1</div>
+        <h2 id="tourTitle">See what needs care.</h2>
+        <p id="tourText">Your home page shows every permit and the next date that needs your care.</p>
+        <div class="tourdemo" id="tourDemo"></div>
+      </div>
+      <div class="touractions">
+        <button class="tourback" id="tourBack" disabled>Back</button>
+        <button class="continue" id="tourNext">Next step</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="guide" id="permitForm" aria-hidden="true">
+    <form class="guidebox" id="addPermitForm">
+      <button class="close" id="closePermitForm" type="button">Close</button>
+      <p class="eyebrow">ADD A PERMIT</p>
+      <h2>What should Civra track?</h2>
+      <label class="field">Permit name<input id="newPermitName" name="permitName" required maxlength="80" placeholder="Food Service Permit"></label>
+      <label class="field">Due date<input id="newPermitDate" name="permitDate" required type="date"></label>
+      <p class="formnote">This demo saves the permit only on this page. It is not sent anywhere.</p>
+      <button class="continue" type="submit">Save permit</button>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js?v=4"></script>
+</body>
+</html>

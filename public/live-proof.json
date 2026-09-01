@@ -1,0 +1,28 @@
+{
+  "proofType": "live-solari-browser-check",
+  "checkedAt": "2026-09-01T00:26:13.852Z",
+  "recordingEnabled": true,
+  "source": "https://nyc-business.nyc.gov/nycbusiness/description/food-service-establishment-permit",
+  "finalUrl": "https://nyc-business.nyc.gov/nycbusiness/description/food-service-establishment-permit",
+  "title": "Food Service Establishment Permit",
+  "pageVerified": true,
+  "reasons": [],
+  "checks": {
+    "salesTax": {
+      "status": "found",
+      "evidence": "Certificate of authority to collect sales tax. Show proof of a Certificate of Authority to Collect Sales Tax."
+    },
+    "foodProtection": {
+      "status": "found",
+      "evidence": "A Food Protection Certificate or course registration is needed when applying for the permit."
+    },
+    "insurance": {
+      "status": "found",
+      "evidence": "Workers' compensation and disability insurance. Show proof of workers' compensation and disability insurance."
+    },
+    "email": {
+      "status": "found",
+      "evidence": "Valid email address. A valid email address is needed if applying online."
+    }
+  }
+}
