@@ -7,6 +7,7 @@ government page, preserves the supporting evidence, and returns **unknown**
 when it cannot trust the result.
 
 [Live demo](https://civra-1033856783599.us-east1.run.app/) ·
+[v0.2.1 release](https://github.com/yash27-lab/civra/releases/tag/v0.2.1) ·
 [Architecture](docs/ARCHITECTURE.md) ·
 [Safety decisions](docs/THREAT_MODEL.md) ·
 [Recorded source proof](docs/LIVE_PROOF.md)
@@ -47,6 +48,10 @@ worse than no answer.
   with a conservative bounded Flate/literal fallback, plus basic PDF/image
   metadata. It matches that evidence against a versioned permit requirement
   set. Scanned PDFs and images without safely extracted text are unknown.
+- The real Solari sandbox has been verified with a synthetic, valid,
+  Flate-compressed one-page PDF. It extracted text with the bounded
+  `flate-literal` path and correctly matched the three document-backed
+  requirements; the non-document email requirement remained unknown.
 - The original upload is never written to the Civra host filesystem. The
   sandbox is destroyed after every attempt, deleting its temporary file.
 - Paid automation is gated by an HttpOnly, SameSite cookie, a server-only
@@ -93,7 +98,8 @@ SOLARI_API_KEY and CIVRA_ACCESS_CODE in the server environment.
 The test suite covers the UI, fail-closed source verification, HTTP security
 headers, access controls, byte-signature rejection, sandbox-route metering,
 and evidence-report rendering. It injects the Solari boundary; it does not
-spend a live API key.
+spend a live API key. A separate synthetic-PDF smoke test has verified the
+real sandbox integration without using an owner document.
 
 ## Requirement evidence
 
