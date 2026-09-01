@@ -19,6 +19,14 @@ when it cannot trust the result.
 
 ![Civra document verification flow](docs/assets/civra-document-check.png)
 
+### Short UI walkthrough
+
+This short walkthrough shows the implemented owner dashboard and document
+verification entry point. It does not claim to show a completed live sandbox
+run.
+
+![Civra UI walkthrough](docs/assets/civra-ui-walkthrough.gif)
+
 ## Problem
 
 Small business owners must navigate changing city pages, long forms, old
