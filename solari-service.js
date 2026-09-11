@@ -1,3 +1,4 @@
+const crypto = require("crypto")
 const { PERMIT_URL, requirementSet } = require("./permit-requirements")
 
 const checks = requirementSet.requirements
@@ -21,6 +22,17 @@ function excerpt(text, lowerBody, lowerPhrase) {
   const start = Math.max(0, at - 60)
   const end = Math.min(text.length, at + lowerPhrase.length + 60)
   return text.slice(start, end).replace(/\s+/g, " ").trim()
+}
+
+
+function sourceFingerprint({ finalUrl, title, text }) {
+  const finalBase = String(finalUrl || "").split(/[?#]/)[0].replace(/\/+$/, "")
+  const canonical = JSON.stringify({
+    finalUrl: finalBase,
+    title: String(title || "").replace(/\s+/g, " ").trim(),
+    text: String(text || "").replace(/\s+/g, " ").trim()
+  })
+  return crypto.createHash("sha256").update(canonical).digest("hex")
 }
 
 // Fail closed: any doubt about the page means every check is "unknown",
@@ -82,6 +94,7 @@ async function runPermitCheck({ apiKey }) {
       source: PERMIT_URL,
       finalUrl,
       title,
+      sourceFingerprint: sourceFingerprint({ finalUrl, title, text }),
       ...evaluatePermitPage({ finalUrl, title, text })
     }
   } finally {
@@ -90,4 +103,4 @@ async function runPermitCheck({ apiKey }) {
   }
 }
 
-module.exports = { PERMIT_URL, evaluatePermitPage, runPermitCheck }
+module.exports = { PERMIT_URL, evaluatePermitPage, runPermitCheck, sourceFingerprint }
