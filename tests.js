@@ -2,7 +2,7 @@ const assert = require("node:assert/strict")
 const test = require("node:test")
 const { setTimeout: wait } = require("node:timers/promises")
 const { createServer } = require("./server")
-const { PERMIT_URL, evaluatePermitPage } = require("./solari-service")
+const { PERMIT_URL, evaluatePermitPage, sourceFingerprint } = require("./solari-service")
 const { identifySignature, makeChecklist } = require("./document-verification-service")
 
 const goodPage = {
@@ -18,6 +18,14 @@ const goodPage = {
     Give a valid email address for city notices.
   `
 }
+
+test("source fingerprints ignore whitespace but detect source changes", () => {
+  const whitespaceOnly = { ...goodPage, text: goodPage.text.replace(/\s+/g, " ") }
+  const changed = { ...goodPage, text: goodPage.text.replace("valid email address", "contact email") }
+
+  assert.equal(sourceFingerprint(goodPage), sourceFingerprint(whitespaceOnly))
+  assert.notEqual(sourceFingerprint(goodPage), sourceFingerprint(changed))
+})
 
 test("a healthy city page returns found for every need, with evidence", () => {
   const result = evaluatePermitPage(goodPage)
@@ -351,6 +359,35 @@ test("a second request is served from cache without a new paid check", () => wit
 
     assert.equal(calls, 1)
   }, { runCheck, accessCode: "test_access" })
+}))
+
+test("live permit checks are metered per session while cached results stay free", () => withApiKey(() => {
+  let calls = 0
+  const runCheck = async () => {
+    calls += 1
+    return { pageVerified: true, reasons: [], checks: {} }
+  }
+
+  return withServer(async base => {
+    const { cookie } = await openTestSession(base)
+    const first = await paidCheck(base, cookie)
+    assert.equal(first.status, 200)
+    assert.equal((await first.json()).fromCache, false)
+
+    const cached = await paidCheck(base, cookie)
+    assert.equal(cached.status, 200)
+    assert.equal((await cached.json()).fromCache, true)
+
+    const otherSession = await openTestSession(base)
+    const liveAgain = await paidCheck(base, otherSession.cookie)
+    assert.equal(liveAgain.status, 429)
+    assert.equal((await liveAgain.json()).code, "PERMIT_CHECK_LIMIT")
+    assert.equal(calls, 1)
+  }, {
+    runCheck,
+    accessCode: "test_access",
+    maxPermitChecksPerSession: 0
+  })
 }))
 
 test("concurrent requests share one live check instead of two launches", () => withApiKey(() => {
