@@ -221,17 +221,16 @@ function createServer({
       return
     }
 
-    if (session.permitChecks >= maxPermitChecksPerSession) {
-      sendJson(response, 429, {
-        code: "PERMIT_CHECK_LIMIT",
-        message: "This Civra session has reached its live permit-check limit. Start a new owner-reviewed session before checking again."
-      })
-      return
-    }
-
-    session.permitChecks += 1
-
     if (!inFlight) {
+      if (session.permitChecks >= maxPermitChecksPerSession) {
+        sendJson(response, 429, {
+          code: "PERMIT_CHECK_LIMIT",
+          message: "This Civra session has reached its live permit-check limit. Start a new owner-reviewed session before checking again."
+        })
+        return
+      }
+
+      session.permitChecks += 1
       inFlight = runCheck({ apiKey: process.env.SOLARI_API_KEY }).finally(() => {
         inFlight = null
       })
