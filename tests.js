@@ -402,7 +402,11 @@ test("concurrent requests share one live check instead of two launches", () => w
     assert.equal(first.status, 200)
     assert.equal(second.status, 200)
     assert.equal(calls, 1)
-  }, { runCheck, accessCode: "test_access" })
+  }, {
+    runCheck,
+    accessCode: "test_access",
+    maxPermitChecksPerSession: 1
+  })
 }))
 
 test("a failed check answers 502 and then cools down with 429", () => withApiKey(() => {
