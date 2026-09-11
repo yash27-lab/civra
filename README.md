@@ -80,6 +80,8 @@ worse than no answer.
 The implementation is intentionally narrow: one NYC permit and one
 reviewable document-verification flow. See [the full architecture](docs/ARCHITECTURE.md).
 
+For local checks and safe contribution practices, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Run locally
 
 Requirements: Node 20+ and a Solari API key for live checks.
