@@ -10,7 +10,8 @@ when it cannot trust the result.
 [v0.2.1 release](https://github.com/yash27-lab/civra/releases/tag/v0.2.1) ·
 [Architecture](docs/ARCHITECTURE.md) ·
 [Safety decisions](docs/THREAT_MODEL.md) ·
-[Recorded source proof](docs/LIVE_PROOF.md)
+[Recorded source proof](docs/LIVE_PROOF.md) ·
+[Documentation index](docs/README.md)
 
 > The public demo currently shows the recorded NYC source check. The document
 > verification slice in this repository needs deployment before it appears at
