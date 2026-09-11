@@ -40,8 +40,8 @@ worse than no answer.
 - A fixed, recorded Solari browser run verifies the official NYC Food Service
   Establishment Permit page. URL, title, page markers, and requirement phrases
   must all agree; otherwise every result is unknown.
-- Each found city requirement includes the matching official-page excerpt and
-  the source timestamp.
+- Each found city requirement includes the matching official-page excerpt,
+  source timestamp, and normalized source fingerprint for change detection.
 - A protected document route accepts a PDF, JPEG, or PNG up to 10 MB, checks
   its magic bytes before any extraction, and verifies those bytes a second time
   in an ephemeral Solari sandbox.
@@ -56,8 +56,8 @@ worse than no answer.
 - The original upload is never written to the Civra host filesystem. The
   sandbox is destroyed after every attempt, deleting its temporary file.
 - Paid automation is gated by an HttpOnly, SameSite cookie, a server-only
-  access code, per-session document limits, a one-at-a-time sandbox limit,
-  cached city checks, and failure cooldowns.
+  access code, per-session permit and document limits, a one-at-a-time sandbox
+  limit, cached city checks, and failure cooldowns.
 
 ## What Civra deliberately does not do
 
