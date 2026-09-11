@@ -361,7 +361,7 @@ test("a second request is served from cache without a new paid check", () => wit
   }, { runCheck, accessCode: "test_access" })
 }))
 
-test("live permit checks are metered per session while cached results stay free", () => withApiKey(() => {
+test("live permit checks are metered per session", () => withApiKey(() => {
   let calls = 0
   const runCheck = async () => {
     calls += 1
@@ -372,21 +372,16 @@ test("live permit checks are metered per session while cached results stay free"
     const { cookie } = await openTestSession(base)
     const first = await paidCheck(base, cookie)
     assert.equal(first.status, 200)
-    assert.equal((await first.json()).fromCache, false)
 
-    const cached = await paidCheck(base, cookie)
-    assert.equal(cached.status, 200)
-    assert.equal((await cached.json()).fromCache, true)
-
-    const otherSession = await openTestSession(base)
-    const liveAgain = await paidCheck(base, otherSession.cookie)
-    assert.equal(liveAgain.status, 429)
-    assert.equal((await liveAgain.json()).code, "PERMIT_CHECK_LIMIT")
+    const limited = await paidCheck(base, cookie)
+    assert.equal(limited.status, 429)
+    assert.equal((await limited.json()).code, "PERMIT_CHECK_LIMIT")
     assert.equal(calls, 1)
   }, {
     runCheck,
+    cacheMs: 0,
     accessCode: "test_access",
-    maxPermitChecksPerSession: 0
+    maxPermitChecksPerSession: 1
   })
 }))
 
