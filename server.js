@@ -18,6 +18,7 @@ const loginWindowMs = 5 * 60 * 1000
 const maxLoginFailures = 5
 const defaultDocumentChecksPerSession = 3
 const defaultDocumentChecksInFlight = 1
+const defaultPermitChecksPerSession = 3
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -114,6 +115,7 @@ function createServer({
   cooldownMs = defaultCooldownMs,
   accessCode = process.env.CIVRA_ACCESS_CODE,
   sessionMs = defaultSessionMs,
+  maxPermitChecksPerSession = defaultPermitChecksPerSession,
   maxDocumentChecksPerSession = defaultDocumentChecksPerSession,
   maxDocumentChecksInFlight = defaultDocumentChecksInFlight
 } = {}) {
@@ -184,13 +186,17 @@ function createServer({
 
     loginFailures.delete(client)
     const token = crypto.randomBytes(32).toString("base64url")
-    sessions.set(token, { expiresAt: Date.now() + sessionMs, documentChecks: 0 })
+    sessions.set(token, {
+      expiresAt: Date.now() + sessionMs,
+      permitChecks: 0,
+      documentChecks: 0
+    })
     sendJson(response, 200, { authenticated: true }, {
       "Set-Cookie": sessionCookie(token, Math.floor(sessionMs / 1000))
     })
   }
 
-  async function handlePermitCheck(response) {
+  async function handlePermitCheck(response, session) {
     if (!process.env.SOLARI_API_KEY) {
       sendJson(response, 503, {
         code: "SOLARI_KEY_MISSING",
@@ -214,6 +220,16 @@ function createServer({
       }, { "Retry-After": String(retryAfter) })
       return
     }
+
+    if (session.permitChecks >= maxPermitChecksPerSession) {
+      sendJson(response, 429, {
+        code: "PERMIT_CHECK_LIMIT",
+        message: "This Civra session has reached its live permit-check limit. Start a new owner-reviewed session before checking again."
+      })
+      return
+    }
+
+    session.permitChecks += 1
 
     if (!inFlight) {
       inFlight = runCheck({ apiKey: process.env.SOLARI_API_KEY }).finally(() => {
@@ -336,7 +352,9 @@ function createServer({
     }
 
     if (pathname === "/api/permit-check" && request.method === "POST") {
-      if (!getSession(request)) {
+      const token = getSession(request)
+      const session = token ? sessions.get(token) : null
+      if (!session) {
         sendJson(response, 401, {
           code: "AUTH_REQUIRED",
           message: "Unlock the live check with the Civra access code."
@@ -350,7 +368,7 @@ function createServer({
         })
         return true
       }
-      await handlePermitCheck(response)
+      await handlePermitCheck(response, session)
       return true
     }
 
