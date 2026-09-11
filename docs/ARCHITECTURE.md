@@ -15,7 +15,8 @@ requirements. It never submits or pays.
    number of requirement phrases.
 4. Any failed trust gate makes every requirement unknown. Found results retain
    the official-page excerpt.
-5. The resulting requirement set has a version and source timestamp.
+5. The resulting requirement set has a version, source timestamp, and normalized
+   SHA-256 fingerprint so a changed official page can be detected and reviewed.
 
 ## Document verification
 
@@ -37,10 +38,11 @@ requirements. It never submits or pays.
 ## Metering
 
 The city check caches a successful result for 15 minutes, coalesces concurrent
-requests, and enters a cooldown after failure. Document checks do not cache
-private uploads: each session may perform three checks and each server runs one
-sandbox check at a time. A production multi-instance service also needs a
-shared rate/spend limit.
+requests, and enters a cooldown after failure. Each session has a bounded number
+of live permit checks, so a valid access code cannot trigger unbounded browser
+spend. Document checks do not cache private uploads: each session may perform
+three checks and each server runs one sandbox check at a time. A production
+multi-instance service also needs a shared rate/spend limit.
 
 ## Trust boundary
 
