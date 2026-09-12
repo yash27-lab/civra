@@ -3,6 +3,7 @@ const fs = require("fs")
 const path = require("path")
 const crypto = require("crypto")
 const { runPermitCheck } = require("./solari-service")
+const { createSourceSnapshotStore } = require("./source-snapshot-store")
 const { MAX_FILE_BYTES, identifySignature, runDocumentVerification } = require("./document-verification-service")
 
 const root = path.resolve(__dirname, "public")
@@ -111,6 +112,7 @@ function readCookie(request, name) {
 function createServer({
   runCheck = runPermitCheck,
   verifyDocument = runDocumentVerification,
+  snapshotStore = createSourceSnapshotStore(),
   cacheMs = defaultCacheMs,
   cooldownMs = defaultCooldownMs,
   accessCode = process.env.CIVRA_ACCESS_CODE,
@@ -231,7 +233,18 @@ function createServer({
       }
 
       session.permitChecks += 1
-      inFlight = runCheck({ apiKey: process.env.SOLARI_API_KEY }).finally(() => {
+      inFlight = (async () => {
+        const result = await runCheck({ apiKey: process.env.SOLARI_API_KEY })
+        try {
+          const sourceSnapshot = await snapshotStore.record(result)
+          return { ...result, sourceSnapshot }
+        } catch (cause) {
+          const error = new Error("Civra could not persist the verified source snapshot.")
+          error.code = "SOURCE_SNAPSHOT_FAILED"
+          error.cause = cause
+          throw error
+        }
+      })().finally(() => {
         inFlight = null
       })
     }
@@ -242,10 +255,16 @@ function createServer({
       sendJson(response, 200, { ...result, fromCache: false })
     } catch (error) {
       cooldownUntil = Date.now() + cooldownMs
-      console.error("Permit check failed", error instanceof Error ? error.message : error)
+      const snapshotFailed = error && error.code === "SOURCE_SNAPSHOT_FAILED"
+      console.error(
+        snapshotFailed ? "Source snapshot failed" : "Permit check failed",
+        error instanceof Error ? error.message : error
+      )
       sendJson(response, 502, {
-        code: "PERMIT_CHECK_FAILED",
-        message: "The permit page could not be checked. Please try again."
+        code: snapshotFailed ? "SOURCE_SNAPSHOT_FAILED" : "PERMIT_CHECK_FAILED",
+        message: snapshotFailed
+          ? "Civra could not preserve the verified city evidence, so no result was returned."
+          : "The permit page could not be checked. Please try again."
       })
     }
   }
