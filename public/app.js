@@ -324,9 +324,15 @@ liveCheck.addEventListener("click", async () => {
     const found = statuses.filter(check => check.status === "found").length
     const missing = statuses.filter(check => check.status === "missing").length
     const note = result.fromCache ? " Shown from the last check." : ""
+    const snapshot = result.sourceSnapshot || {}
+    const snapshotNote = snapshot.change === "changed"
+      ? " The official page changed since the previous snapshot; review the evidence before relying on it."
+      : snapshot.change === "first_observation"
+        ? " A new source snapshot was recorded for future change detection."
+        : ""
     liveStatus.textContent = missing === 0
-      ? `Live check done. All ${found} permit needs were found on the city page.${note}`
-      : `Live check done. ${found} found and ${missing} not found on the city page. Please review.${note}`
+      ? `Live check done. All ${found} permit needs were found on the city page.${note}${snapshotNote}`
+      : `Live check done. ${found} found and ${missing} not found on the city page. Please review.${note}${snapshotNote}`
   } catch (error) {
     liveStatus.textContent = error instanceof Error ? error.message : "The city check failed."
   } finally {
