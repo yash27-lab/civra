@@ -66,6 +66,9 @@ test("source snapshots retain the current fingerprint and change history", async
 
     const index = JSON.parse(await fs.readFile(path.join(directory, "index.json"), "utf8"))
     assert.equal(index.latestSnapshotId, changed.snapshotId)
+
+    const stored = JSON.parse(await fs.readFile(path.join(directory, `${first.snapshotId}.json`), "utf8"))
+    assert.equal(Object.hasOwn(stored, "text"), false)
   } finally {
     await fs.rm(directory, { recursive: true, force: true })
   }
