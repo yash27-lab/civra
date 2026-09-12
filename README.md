@@ -41,7 +41,8 @@ worse than no answer.
   Establishment Permit page. URL, title, page markers, and requirement phrases
   must all agree; otherwise every result is unknown.
 - Each found city requirement includes the matching official-page excerpt,
-  source timestamp, and normalized source fingerprint for change detection.
+  source timestamp, and a persisted source snapshot with normalized fingerprint
+  and change status.
 - A protected document route accepts a PDF, JPEG, or PNG up to 10 MB, checks
   its magic bytes before any extraction, and verifies those bytes a second time
   in an ephemeral Solari sandbox.
