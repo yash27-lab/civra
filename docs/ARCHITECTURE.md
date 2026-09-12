@@ -15,8 +15,11 @@ requirements. It never submits or pays.
    number of requirement phrases.
 4. Any failed trust gate makes every requirement unknown. Found results retain
    the official-page excerpt.
-5. The resulting requirement set has a version, source timestamp, and normalized
-   SHA-256 fingerprint so a changed official page can be detected and reviewed.
+5. Before returning a live result, Civra atomically records a versioned source
+   snapshot containing the trust outcome, public evidence, timestamp, and
+   normalized SHA-256 fingerprint.
+6. A snapshot-write failure fails closed: Civra returns no live result rather
+   than presenting unrecorded city evidence.
 
 ## Document verification
 
