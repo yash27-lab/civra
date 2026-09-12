@@ -1,9 +1,13 @@
 const assert = require("node:assert/strict")
+const fs = require("node:fs/promises")
+const os = require("node:os")
+const path = require("node:path")
 const test = require("node:test")
 const { setTimeout: wait } = require("node:timers/promises")
 const { createServer } = require("./server")
 const { PERMIT_URL, evaluatePermitPage, sourceFingerprint } = require("./solari-service")
 const { identifySignature, makeChecklist } = require("./document-verification-service")
+const { createSourceSnapshotStore } = require("./source-snapshot-store")
 
 const goodPage = {
   finalUrl: PERMIT_URL,
@@ -25,6 +29,46 @@ test("source fingerprints ignore whitespace but detect source changes", () => {
 
   assert.equal(sourceFingerprint(goodPage), sourceFingerprint(whitespaceOnly))
   assert.notEqual(sourceFingerprint(goodPage), sourceFingerprint(changed))
+})
+
+test("source snapshots retain the current fingerprint and change history", async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "civra-snapshots-"))
+  try {
+    const store = createSourceSnapshotStore({ directory })
+    const firstCheck = {
+      source: PERMIT_URL,
+      finalUrl: goodPage.finalUrl,
+      title: goodPage.title,
+      checkedAt: "2026-09-01T00:00:00.000Z",
+      sourceFingerprint: sourceFingerprint(goodPage),
+      pageVerified: true,
+      reasons: [],
+      checks: {}
+    }
+    const first = await store.record(firstCheck)
+    assert.equal(first.change, "first_observation")
+
+    const unchanged = await store.record({
+      ...firstCheck,
+      checkedAt: "2026-09-01T01:00:00.000Z"
+    })
+    assert.equal(unchanged.change, "unchanged")
+    assert.equal(unchanged.snapshotId, first.snapshotId)
+
+    const changedPage = { ...goodPage, text: goodPage.text.replace("valid email address", "contact email") }
+    const changed = await store.record({
+      ...firstCheck,
+      checkedAt: "2026-09-02T00:00:00.000Z",
+      sourceFingerprint: sourceFingerprint(changedPage)
+    })
+    assert.equal(changed.change, "changed")
+    assert.equal(changed.previousSnapshotId, first.snapshotId)
+
+    const index = JSON.parse(await fs.readFile(path.join(directory, "index.json"), "utf8"))
+    assert.equal(index.latestSnapshotId, changed.snapshotId)
+  } finally {
+    await fs.rm(directory, { recursive: true, force: true })
+  }
 })
 
 test("a healthy city page returns found for every need, with evidence", () => {
@@ -104,8 +148,19 @@ test("a document result preserves matching evidence and leaves non-document chec
   assert.match(checklist.find(check => check.key === "salesTax").evidence, /Certificate of Authority/i)
 })
 
-async function withServer(run, options) {
-  const server = createServer(options)
+async function withServer(run, options = {}) {
+  const {
+    snapshotStore = {
+      record: async result => ({
+        snapshotId: result.sourceFingerprint || "test-snapshot",
+        change: "unchanged",
+        previousSnapshotId: null,
+        observedAt: result.checkedAt || "2026-09-01T00:00:00.000Z"
+      })
+    },
+    ...serverOptions
+  } = options
+  const server = createServer({ ...serverOptions, snapshotStore })
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve))
   try {
     const address = server.address()
@@ -199,6 +254,27 @@ test("the live check fails safely when the server key is missing", async () => {
     if (savedKey) process.env.SOLARI_API_KEY = savedKey
   }
 })
+
+test("a live result fails closed when its source snapshot cannot be preserved", () => withApiKey(() => {
+  const runCheck = async () => ({
+    sourceFingerprint: sourceFingerprint(goodPage),
+    pageVerified: true,
+    reasons: [],
+    checks: {}
+  })
+  const snapshotStore = {
+    record: async () => {
+      throw new Error("snapshot volume unavailable")
+    }
+  }
+
+  return withServer(async base => {
+    const { cookie } = await openTestSession(base)
+    const response = await paidCheck(base, cookie)
+    assert.equal(response.status, 502)
+    assert.equal((await response.json()).code, "SOURCE_SNAPSHOT_FAILED")
+  }, { runCheck, snapshotStore, accessCode: "test_access" })
+}))
 
 test("unknown files and unsafe methods are rejected", () => withServer(async base => {
   assert.equal((await fetch(`${base}/missing.txt`)).status, 404)
