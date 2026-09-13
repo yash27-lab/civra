@@ -20,6 +20,9 @@ const permitForm = document.querySelector("#permitForm")
 const addPermitForm = document.querySelector("#addPermitForm")
 const toast = document.querySelector("#toast")
 const permitsCard = document.querySelector("#permitsCard")
+const renewalsCard = document.querySelector("#renewalsCard")
+const renewalSummary = document.querySelector("#renewalSummary")
+const renewalQueue = document.querySelector("#renewalQueue")
 const historyCard = document.querySelector("#historyCard")
 const proofSummary = document.querySelector("#proofSummary")
 const proofSource = document.querySelector("#proofSource")
@@ -69,6 +72,64 @@ let tourStep = 0
 let toastTimer
 let selectedFile = null
 let sessionOpen = false
+const trackedRenewals = [
+  { name: "Food Service Permit", dueDate: "2026-09-21" },
+  { name: "Food Handler Card", dueDate: "2027-06-14" }
+]
+
+function localDate(value) {
+  const [year, month, day] = String(value).split("-").map(Number)
+  return new Date(year, month - 1, day)
+}
+
+function daysUntil(value) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return Math.round((localDate(value) - today) / 86400000)
+}
+
+function renewalState(days) {
+  if (days < 0) return { key: "overdue", label: "Overdue", detail: `${Math.abs(days)} days late` }
+  if (days <= 30) return { key: "now", label: "Review now", detail: `${days} days left` }
+  if (days <= 90) return { key: "soon", label: "Plan review", detail: `${days} days left` }
+  return { key: "planned", label: "Planned", detail: `${days} days left` }
+}
+
+function renderRenewals() {
+  const ordered = trackedRenewals
+    .map(renewal => ({ ...renewal, days: daysUntil(renewal.dueDate) }))
+    .sort((left, right) => left.days - right.days)
+
+  const needsReview = ordered.filter(renewal => renewal.days <= 30).length
+  renewalSummary.textContent = needsReview
+    ? `${needsReview} renewal${needsReview === 1 ? "" : "s"} needs owner review in the next 30 days.`
+    : "No tracked renewal needs owner review in the next 30 days."
+
+  renewalQueue.replaceChildren()
+  for (const renewal of ordered) {
+    const state = renewalState(renewal.days)
+    const row = document.createElement("article")
+    row.className = `renewalrow ${state.key}`
+
+    const details = document.createElement("div")
+    details.className = "grow"
+    const name = document.createElement("strong")
+    name.textContent = renewal.name
+    const due = document.createElement("small")
+    due.textContent = `Due ${localDate(renewal.dueDate).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}`
+    details.append(name, due)
+
+    const status = document.createElement("span")
+    status.className = `pill renewalpill ${state.key}`
+    status.textContent = state.label
+    const timing = document.createElement("small")
+    timing.className = "renewaltiming"
+    timing.textContent = state.detail
+
+    row.append(details, timing, status)
+    renewalQueue.append(row)
+  }
+}
 
 function showToast(message) {
   toast.textContent = message
@@ -128,6 +189,7 @@ document.querySelectorAll(".nav").forEach(button => {
     const page = button.dataset.page
     if (page === "home") window.scrollTo({ top: 0, behavior: "smooth" })
     if (page === "permits") showAndFocus(permitsCard)
+    if (page === "renewals") showAndFocus(renewalsCard)
     if (page === "files") openSheet()
     if (page === "history") showAndFocus(historyCard)
   })
@@ -295,6 +357,8 @@ addPermitForm.addEventListener("submit", event => {
   state.textContent = "Added"
   row.append(icon, details, state)
   document.querySelector(".permits").append(row)
+  trackedRenewals.push({ name, dueDate: date })
+  renderRenewals()
 
   permitForm.classList.remove("show")
   permitForm.setAttribute("aria-hidden", "true")
@@ -408,5 +472,6 @@ signOut.addEventListener("click", async () => {
   showSession(false)
 })
 
+renderRenewals()
 syncSession()
 loadLiveProof()
