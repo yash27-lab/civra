@@ -59,6 +59,8 @@ worse than no answer.
 - Paid automation is gated by an HttpOnly, SameSite cookie, a server-only
   access code, per-session permit and document limits, a one-at-a-time sandbox
   limit, cached city checks, and failure cooldowns.
+- The owner dashboard ranks tracked renewal dates for review without sending
+  a notification, filing a renewal, or taking any external action.
 
 ## What Civra deliberately does not do
 
@@ -114,8 +116,9 @@ the evidence or reason for each result.
 
 ## Planned next steps
 
-1. Add change detection that produces a new versioned source snapshot.
-2. Add owner-reviewed renewal reminders.
+1. Configure shared durable snapshot storage for multi-instance deployments.
+2. Persist owner-reviewed renewal reminders across sessions and add explicit
+   opt-in before any notification delivery.
 3. Conduct and publish anonymized interviews with NYC food-business owners,
    accountants, and permit expediters.
 
