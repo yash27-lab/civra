@@ -12,8 +12,9 @@
     <nav>
       <button class="nav active" data-page="home"><span>01</span> Home</button>
       <button class="nav" data-page="permits"><span>02</span> Permits</button>
-      <button class="nav" data-page="files"><span>03</span> Files</button>
-      <button class="nav" data-page="history"><span>04</span> History</button>
+      <button class="nav" data-page="renewals"><span>03</span> Renewal review</button>
+      <button class="nav" data-page="files"><span>04</span> Files</button>
+      <button class="nav" data-page="history"><span>05</span> History</button>
     </nav>
     <div class="help">
       <div class="helpmark">?</div>
@@ -109,6 +110,13 @@
         <div class="rule"><span>2</span><p><strong>You check every answer</strong><small>Each answer shows where it came from.</small></p></div>
         <div class="rule"><span>3</span><p><strong>You choose when to send</strong><small>Payment and final send always wait for you.</small></p></div>
       </article>
+    </section>
+
+    <section class="card renewals" id="renewalsCard" tabindex="-1">
+      <div class="cardtop"><div><p class="eyebrow">RENEWAL REVIEW</p><h3>Review due dates before they become emergencies.</h3></div></div>
+      <p class="renewalsummary" id="renewalSummary" aria-live="polite"></p>
+      <div class="renewalqueue" id="renewalQueue"></div>
+      <p class="renewalnote">Civra only surfaces dates for owner review. It never renews, pays, or submits anything automatically.</p>
     </section>
 
     <section class="recent" id="historyCard" tabindex="-1">
