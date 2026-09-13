@@ -64,6 +64,19 @@ h3 { font-size:22px; margin-bottom:0; }
 .securityitem strong,.securityitem small { display:block; }
 .securityitem small { margin-top:5px; color:#acb8b2; font-size:11px; line-height:1.5; }
 .card,.recent { background:var(--paper); border:1px solid var(--line); border-radius:13px; padding:26px; }
+.renewals { margin-top:22px; }
+.renewalsummary { margin:0 0 14px; color:#5f6b64; font-size:13px; }
+.renewalqueue { border-top:1px solid #e9ece8; }
+.renewalrow { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid #e9ece8; }
+.renewalrow strong,.renewalrow small { display:block; }
+.renewalrow .grow small { margin-top:4px; color:#7d8680; font-size:11px; }
+.renewaltiming { color:#66726b; font-size:11px; }
+.renewalpill { min-width:82px; text-align:center; }
+.renewalpill.overdue { background:#f2dfd8; color:#8a4738; }
+.renewalpill.now { background:#f2ead8; color:#7a5c26; }
+.renewalpill.soon { background:#e3ece6; color:#315c4e; }
+.renewalpill.planned { background:var(--mint); color:var(--green); }
+.renewalnote { margin:15px 0 0; color:#748078; font-size:11px; line-height:1.5; }
 .cardtop { display:flex; justify-content:space-between; align-items:start; margin-bottom:20px; }
 .cardtop button { border:0; background:none; color:var(--green); font-size:12px; cursor:pointer; }
 .permitrow,.historyrow { display:flex; align-items:center; gap:14px; padding:15px 0; border-top:1px solid #e9ece8; }
