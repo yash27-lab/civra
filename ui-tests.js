@@ -62,6 +62,31 @@ test("main menu, task, guide, and add permit actions work", async () => {
   dom.window.close()
 })
 
+test("renewal review prioritizes owner action and tracks added permits", async () => {
+  const dom = loadPage()
+  const { document, Event } = dom.window
+  await nextTurn()
+
+  assert.match(document.querySelector("#renewalQueue").textContent, /Food Service Permit/)
+  assert.match(document.querySelector("#renewalSummary").textContent, /owner review/i)
+
+  const due = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  document.querySelector("#addPermit").click()
+  document.querySelector("#newPermitName").value = "Sidewalk Cafe Permit"
+  document.querySelector("#newPermitDate").value = due
+  document.querySelector("#addPermitForm").dispatchEvent(new Event("submit", {
+    bubbles: true,
+    cancelable: true
+  }))
+
+  assert.match(document.querySelector("#renewalQueue").textContent, /Sidewalk Cafe Permit/)
+  assert.match(document.querySelector("#renewalQueue").textContent, /Review now/)
+  document.querySelector('[data-page="renewals"]').click()
+  assert.ok(document.querySelector('[data-page="renewals"]').classList.contains("active"))
+
+  dom.window.close()
+})
+
 test("document selection does not trust browser MIME and requires an unlocked session", async () => {
   const dom = loadPage()
   const { document, Event, File } = dom.window
