@@ -41,6 +41,17 @@ h3 { font-size:22px; margin-bottom:0; }
 .proof p { margin-bottom:0; color:#68736d; font-size:12px; }
 .proof .eyebrow { margin-bottom:5px; color:var(--green); }
 .proof a { color:var(--green); font-size:12px; font-weight:bold; text-decoration:none; }
+.sourcehistory { margin-top:16px; padding:22px; background:var(--paper); border:1px solid var(--line); border-radius:13px; }
+.sourcehistory .cardtop { margin-bottom:8px; }
+.sourcehistorystatus { margin:0 0 12px; color:#65716a; font-size:12px; }
+.sourcehistorylist { border-top:1px solid #e9ece8; }
+.sourcehistoryrow { display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid #e9ece8; }
+.sourcehistoryrow strong,.sourcehistoryrow small { display:block; }
+.sourcehistoryrow .grow small { margin-top:4px; color:#7d8680; font-size:11px; }
+.sourcefingerprint { color:#66726b; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; }
+.sourcehistorystate { min-width:66px; text-align:center; }
+.sourcehistorystate.verified { background:var(--mint); color:var(--green); }
+.sourcehistorystate.review { background:#f2ead8; color:#7a5c26; }
 .grid { display:grid; grid-template-columns:1.5fr 1fr; gap:22px; margin-top:22px; }
 .story { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin-top:22px; overflow:hidden; background:var(--line); border:1px solid var(--line); border-radius:13px; }
 .story article { background:var(--paper); padding:25px; }
