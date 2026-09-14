@@ -86,7 +86,39 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
     }
   }
 
-  return { directory, record }
+  async function list({ limit = 10 } = {}) {
+    let entries
+    try {
+      entries = await fs.readdir(directory, { withFileTypes: true })
+    } catch (error) {
+      if (error && error.code === "ENOENT") return []
+      throw error
+    }
+
+    const snapshots = await Promise.all(
+      entries
+        .filter(entry => entry.isFile() && /^[a-f0-9]{64}\\.json$/.test(entry.name))
+        .map(entry => readJson(path.join(directory, entry.name)))
+    )
+
+    return snapshots
+      .filter(Boolean)
+      .sort((left, right) => String(right.lastObservedAt).localeCompare(String(left.lastObservedAt)))
+      .slice(0, Math.max(0, limit))
+      .map(snapshot => ({
+        snapshotId: snapshot.snapshotId,
+        source: snapshot.source,
+        finalUrl: snapshot.finalUrl,
+        title: snapshot.title,
+        pageVerified: snapshot.pageVerified,
+        reasons: snapshot.reasons,
+        firstObservedAt: snapshot.firstObservedAt,
+        lastObservedAt: snapshot.lastObservedAt,
+        observationCount: snapshot.observationCount
+      }))
+  }
+
+  return { directory, record, list }
 }
 
 module.exports = { createSourceSnapshotStore, snapshotIdFor }
