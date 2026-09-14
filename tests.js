@@ -67,6 +67,10 @@ test("source snapshots retain the current fingerprint and change history", async
     const index = JSON.parse(await fs.readFile(path.join(directory, "index.json"), "utf8"))
     assert.equal(index.latestSnapshotId, changed.snapshotId)
 
+    const history = await store.list()
+    assert.equal(history.length, 2)
+    assert.equal(history[0].snapshotId, changed.snapshotId)
+
     const stored = JSON.parse(await fs.readFile(path.join(directory, `${first.snapshotId}.json`), "utf8"))
     assert.equal(Object.hasOwn(stored, "text"), false)
   } finally {
@@ -159,7 +163,8 @@ async function withServer(run, options = {}) {
         change: "unchanged",
         previousSnapshotId: null,
         observedAt: result.checkedAt || "2026-09-01T00:00:00.000Z"
-      })
+      }),
+      list: async () => []
     },
     ...serverOptions
   } = options
@@ -282,6 +287,27 @@ test("a live result fails closed when its source snapshot cannot be preserved", 
 test("unknown files and unsafe methods are rejected", () => withServer(async base => {
   assert.equal((await fetch(`${base}/missing.txt`)).status, 404)
   assert.equal((await fetch(`${base}/`, { method: "POST" })).status, 405)
+}))
+
+test("source history requires a private Civra session and returns public snapshots", () => withServer(async base => {
+  const noSession = await fetch(`${base}/api/source-history`)
+  assert.equal(noSession.status, 401)
+  assert.equal((await noSession.json()).code, "AUTH_REQUIRED")
+
+  const { cookie } = await openTestSession(base)
+  const response = await fetch(`${base}/api/source-history`, { headers: { Cookie: cookie } })
+  assert.equal(response.status, 200)
+  assert.deepEqual((await response.json()).snapshots, [{
+    snapshotId: "a".repeat(64),
+    source: PERMIT_URL,
+    pageVerified: true
+  }])
+}, {
+  accessCode: "test_access",
+  snapshotStore: {
+    record: async () => ({ snapshotId: "a".repeat(64), change: "first_observation" }),
+    list: async () => [{ snapshotId: "a".repeat(64), source: PERMIT_URL, pageVerified: true }]
+  }
 }))
 
 test("the paid check requires a private Civra session", () => withApiKey(() => {
