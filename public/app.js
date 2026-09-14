@@ -26,6 +26,9 @@ const renewalQueue = document.querySelector("#renewalQueue")
 const historyCard = document.querySelector("#historyCard")
 const proofSummary = document.querySelector("#proofSummary")
 const proofSource = document.querySelector("#proofSource")
+const sourceHistoryCard = document.querySelector("#sourceHistoryCard")
+const sourceHistoryStatus = document.querySelector("#sourceHistoryStatus")
+const sourceHistoryList = document.querySelector("#sourceHistoryList")
 const documentReport = document.querySelector("#documentReport")
 const documentTitle = document.querySelector("#documentTitle")
 const documentSummary = document.querySelector("#documentSummary")
@@ -128,6 +131,58 @@ function renderRenewals() {
 
     row.append(details, timing, status)
     renewalQueue.append(row)
+  }
+}
+
+function renderSourceHistory(snapshots) {
+  sourceHistoryList.replaceChildren()
+  if (snapshots.length === 0) {
+    sourceHistoryStatus.textContent = "No source snapshots have been recorded yet."
+    return
+  }
+
+  sourceHistoryStatus.textContent = `${snapshots.length} recorded source snapshot${snapshots.length === 1 ? "" : "s"} available for review.`
+  for (const snapshot of snapshots) {
+    const row = document.createElement("article")
+    row.className = "sourcehistoryrow"
+
+    const details = document.createElement("div")
+    details.className = "grow"
+    const title = document.createElement("strong")
+    title.textContent = snapshot.title || snapshot.source || "Official source"
+    const observed = document.createElement("small")
+    observed.textContent = `Last observed ${new Date(snapshot.lastObservedAt).toLocaleString()}`
+    details.append(title, observed)
+
+    const fingerprint = document.createElement("small")
+    fingerprint.className = "sourcefingerprint"
+    fingerprint.textContent = `Snapshot ${String(snapshot.snapshotId).slice(0, 12)}`
+
+    const status = document.createElement("span")
+    status.className = `pill sourcehistorystate ${snapshot.pageVerified ? "verified" : "review"}`
+    status.textContent = snapshot.pageVerified ? "Verified" : "Review"
+
+    row.append(details, fingerprint, status)
+    sourceHistoryList.append(row)
+  }
+}
+
+async function loadSourceHistory() {
+  if (!sessionOpen) {
+    sourceHistoryStatus.textContent = "Unlock Civra to review recorded source history."
+    sourceHistoryList.replaceChildren()
+    return
+  }
+
+  sourceHistoryStatus.textContent = "Loading recorded source history."
+  try {
+    const response = await fetch("/api/source-history")
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || "Civra could not load source history.")
+    renderSourceHistory(Array.isArray(result.snapshots) ? result.snapshots : [])
+  } catch (error) {
+    sourceHistoryList.replaceChildren()
+    sourceHistoryStatus.textContent = error instanceof Error ? error.message : "Civra could not load source history."
   }
 }
 
@@ -397,6 +452,7 @@ liveCheck.addEventListener("click", async () => {
     liveStatus.textContent = missing === 0
       ? `Live check done. All ${found} permit needs were found on the city page.${note}${snapshotNote}`
       : `Live check done. ${found} found and ${missing} not found on the city page. Please review.${note}${snapshotNote}`
+    loadSourceHistory()
   } catch (error) {
     liveStatus.textContent = error instanceof Error ? error.message : "The city check failed."
   } finally {
@@ -413,6 +469,7 @@ function showSession(isOpen) {
   liveStatus.textContent = isOpen
     ? "Live check is unlocked for this browser."
     : "Unlock before using the paid Solari check."
+  loadSourceHistory()
 }
 
 async function syncSession() {
