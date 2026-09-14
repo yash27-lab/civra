@@ -172,6 +172,35 @@ test("an unlocked owner can verify a document and review its evidence", async ()
   dom.window.close()
 })
 
+test("an unlocked owner can review recorded source history", async () => {
+  const fetchImpl = async (url, options = {}) => {
+    if (url === "/api/session" && !options.method) return jsonResponse({ authenticated: true })
+    if (url === "/api/source-history") {
+      return jsonResponse({
+        snapshots: [{
+          snapshotId: "0123456789abcdef".repeat(4),
+          title: "Food Service Establishment Permit - NYC Business",
+          pageVerified: true,
+          lastObservedAt: "2026-09-12T09:00:00.000Z"
+        }]
+      })
+    }
+    return jsonResponse({}, { ok: false, status: 404 })
+  }
+
+  const dom = loadPage(fetchImpl)
+  await nextTurn()
+  await nextTurn()
+
+  const { document } = dom.window
+  assert.match(document.querySelector("#sourceHistoryStatus").textContent, /1 recorded source snapshot/)
+  assert.match(document.querySelector("#sourceHistoryList").textContent, /Food Service Establishment Permit/)
+  assert.match(document.querySelector("#sourceHistoryList").textContent, /Verified/)
+  assert.match(document.querySelector("#sourceHistoryList").textContent, /0123456789ab/)
+
+  dom.window.close()
+})
+
 test("access code unlocks the paid check and lock closes it", async () => {
   const calls = []
   const fetchImpl = async (url, options = {}) => {
