@@ -113,6 +113,7 @@ function createServer({
   runCheck = runPermitCheck,
   verifyDocument = runDocumentVerification,
   snapshotStore = createSourceSnapshotStore(),
+  snapshotHistoryLimit = 10,
   cacheMs = defaultCacheMs,
   cooldownMs = defaultCooldownMs,
   accessCode = process.env.CIVRA_ACCESS_CODE,
@@ -269,6 +270,19 @@ function createServer({
     }
   }
 
+  async function handleSourceHistory(response) {
+    try {
+      const snapshots = await snapshotStore.list({ limit: snapshotHistoryLimit })
+      sendJson(response, 200, { snapshots })
+    } catch (error) {
+      console.error("Source history unavailable", error instanceof Error ? error.message : error)
+      sendJson(response, 503, {
+        code: "SOURCE_HISTORY_UNAVAILABLE",
+        message: "Civra could not load the recorded source history."
+      })
+    }
+  }
+
   async function handleDocumentCheck(request, response) {
     if (!process.env.SOLARI_API_KEY) {
       sendJson(response, 503, {
@@ -357,6 +371,20 @@ function createServer({
 
     if (pathname === "/api/session" && request.method === "POST") {
       await openSession(request, response)
+      return true
+    }
+
+    if (pathname === "/api/source-history" && request.method === "GET") {
+      const token = getSession(request)
+      const session = token ? sessions.get(token) : null
+      if (!session) {
+        sendJson(response, 401, {
+          code: "AUTH_REQUIRED",
+          message: "Unlock Civra before reviewing recorded source history."
+        })
+        return true
+      }
+      await handleSourceHistory(response)
       return true
     }
 
