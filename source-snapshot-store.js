@@ -97,7 +97,7 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
 
     const snapshots = await Promise.all(
       entries
-        .filter(entry => entry.isFile() && /^[a-f0-9]{64}\\.json$/.test(entry.name))
+        .filter(entry => entry.isFile() && /^[a-f0-9]{64}\.json$/.test(entry.name))
         .map(entry => readJson(path.join(directory, entry.name)))
     )
 
