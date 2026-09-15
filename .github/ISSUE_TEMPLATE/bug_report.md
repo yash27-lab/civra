@@ -19,6 +19,7 @@ Provide the smallest safe reproduction. Do not attach real owner documents or cr
 - Browser or HTTP client:
 - Is this a recorded-source check or document-verification flow?
 - Relevant `/api/health` capability status (with no secrets):
+- Was this request same-origin and made from an unlocked Civra session?
 
 ## Expected behavior
 
