@@ -359,6 +359,40 @@ test("an open session still needs the trusted action header", () => withApiKey((
   }, { runCheck, accessCode: "test_access" })
 }))
 
+test("cross-site browser requests cannot trigger paid permit checks", () => withApiKey(() => {
+  let calls = 0
+  const runCheck = async () => {
+    calls += 1
+    return { pageVerified: true, reasons: [], checks: {} }
+  }
+
+  return withServer(async base => {
+    const { cookie } = await openTestSession(base)
+    const blocked = await fetch(`${base}/api/permit-check`, {
+      method: "POST",
+      headers: {
+        Cookie: cookie,
+        Origin: "https://untrusted.example",
+        "X-Civra-Action": "permit-check"
+      }
+    })
+    assert.equal(blocked.status, 403)
+    assert.equal((await blocked.json()).code, "UNTRUSTED_ORIGIN")
+    assert.equal(calls, 0)
+
+    const allowed = await fetch(`${base}/api/permit-check`, {
+      method: "POST",
+      headers: {
+        Cookie: cookie,
+        Origin: base,
+        "X-Civra-Action": "permit-check"
+      }
+    })
+    assert.equal(allowed.status, 200)
+    assert.equal(calls, 1)
+  }, { runCheck, accessCode: "test_access" })
+}))
+
 test("document checks require the same private session and explicit action", () => withApiKey(() => {
   const verifyDocument = async () => ({ ok: true })
   return withServer(async base => {
