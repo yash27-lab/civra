@@ -43,9 +43,11 @@ requirements. It never submits or pays.
 The city check caches a successful result for 15 minutes, coalesces concurrent
 requests, and enters a cooldown after failure. Each session has a bounded number
 of live permit checks, so a valid access code cannot trigger unbounded browser
-spend. Document checks do not cache private uploads: each session may perform
-three checks and each server runs one sandbox check at a time. A production
-multi-instance service also needs a shared rate/spend limit.
+spend. The session API reports remaining permit and document checks so the owner
+can review limits before starting another paid action. Document checks do not
+cache private uploads: each session may perform three checks and each server
+runs one sandbox check at a time. A production multi-instance service also
+needs a shared rate/spend limit.
 
 ## Trust boundary
 
