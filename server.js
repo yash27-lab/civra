@@ -222,6 +222,19 @@ function createServer({
     })
   }
 
+  function healthPayload() {
+    const liveChecksConfigured = Boolean(process.env.SOLARI_API_KEY && accessCode)
+    return {
+      name: "civra",
+      status: liveChecksConfigured ? "ready" : "configuration_required",
+      capabilities: {
+        livePermitChecks: liveChecksConfigured,
+        documentVerification: liveChecksConfigured,
+        sourceSnapshotStorage: process.env.CIVRA_SOURCE_SNAPSHOT_DIR ? "persistent" : "local"
+      }
+    }
+  }
+
   async function handlePermitCheck(response, session) {
     if (!process.env.SOLARI_API_KEY) {
       sendJson(response, 503, {
@@ -406,7 +419,7 @@ function createServer({
     }
 
     if (pathname === "/api/health" && request.method === "GET") {
-      sendJson(response, 200, { name: "civra", status: "ready" })
+      sendJson(response, 200, healthPayload())
       return true
     }
 
