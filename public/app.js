@@ -375,7 +375,7 @@ continueButton.addEventListener("click", async () => {
     if (!response.ok) throw new Error(result.message || "Civra could not verify this file.")
     showDocumentResult(result)
     const remaining = Number.isInteger(result.remainingDocumentChecks)
-      ? ` ${result.remainingDocumentChecks} document check${result.remainingDocumentChecks === 1 ? "" : "s"} remain in this session.`
+      ? ` ${result.remainingDocumentChecks} document check${result.remainingDocumentChecks === 1 ? "" : "s"} ${result.remainingDocumentChecks === 1 ? "remains" : "remain"} in this session.`
       : ""
     fileOk.textContent = "Document checked. Review the evidence below." + remaining
   } catch (error) {
@@ -447,7 +447,7 @@ liveCheck.addEventListener("click", async () => {
     const missing = statuses.filter(check => check.status === "missing").length
     const note = result.fromCache ? " Shown from the last check." : ""
     const budgetNote = Number.isInteger(result.remainingPermitChecks)
-      ? ` ${result.remainingPermitChecks} live permit check${result.remainingPermitChecks === 1 ? "" : "s"} remain in this session.`
+      ? ` ${result.remainingPermitChecks} live permit check${result.remainingPermitChecks === 1 ? "" : "s"} ${result.remainingPermitChecks === 1 ? "remains" : "remain"} in this session.`
       : ""
     const snapshot = result.sourceSnapshot || {}
     const snapshotNote = snapshot.change === "changed"
@@ -473,10 +473,10 @@ function showSession(session) {
   signOut.hidden = !sessionOpen
   updateDocumentButton()
   const permitBudget = Number.isInteger(session && session.remainingPermitChecks)
-    ? ` ${session.remainingPermitChecks} live permit check${session.remainingPermitChecks === 1 ? "" : "s"} remain.`
+    ? ` ${session.remainingPermitChecks} live permit check${session.remainingPermitChecks === 1 ? "" : "s"} ${session.remainingPermitChecks === 1 ? "remains" : "remain"}.`
     : ""
   const documentBudget = Number.isInteger(session && session.remainingDocumentChecks)
-    ? ` ${session.remainingDocumentChecks} document check${session.remainingDocumentChecks === 1 ? "" : "s"} remain.`
+    ? ` ${session.remainingDocumentChecks} document check${session.remainingDocumentChecks === 1 ? "" : "s"} ${session.remainingDocumentChecks === 1 ? "remains" : "remain"}.`
     : ""
   liveStatus.textContent = sessionOpen
     ? "Live check is unlocked for this browser." + permitBudget + documentBudget
