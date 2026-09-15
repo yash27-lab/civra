@@ -5,4 +5,5 @@
 - [Recorded source proof](LIVE_PROOF.md) — captured evidence for the NYC permit check.
 - [Source snapshots](SOURCE_SNAPSHOTS.md) — persisted source history, fingerprints, and deployment requirements.
 - [Local testing](TESTING.md) — offline validation and safe fixture guidance.
+- [Operations runbook](OPERATIONS.md) — readiness checks and safe production configuration.
 - [Renewal reminders](RENEWALS.md) — owner-reviewed due-date states and current demo limits.
