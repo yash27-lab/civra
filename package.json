@@ -5,7 +5,8 @@
   "scripts": {
     "check": "node --check server.js && node --check solari-service.js && node --check document-verification-service.js && node --check permit-requirements.js && node --check public/app.js && node --check ui-tests.js && npm test",
     "start": "node server.js",
-    "test": "node --test tests.js ui-tests.js"
+    "test": "node --test tests.js ui-tests.js",
+    "test:server": "node --test tests.js"
   },
   "engines": {
     "node": ">=20"
