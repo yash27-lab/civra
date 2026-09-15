@@ -17,9 +17,12 @@
 
 - Solari credentials stay in server environment variables.
 - Cookie sessions are HttpOnly and SameSite=Strict.
-- A short access code gate, login cooldown, per-session document allowance,
-  one-at-a-time document sandbox limit, city result cache, and city failure
-  cooldown reduce accidental or public spend.
+- State-changing API requests with an `Origin` header must match Civra's
+  own scheme and host; cross-site browser requests are rejected before they
+  can unlock a session or spend a paid check.
+- A short access code gate, login cooldown, per-session permit and document
+  allowance, one-at-a-time document sandbox limit, city result cache, and city
+  failure cooldown reduce accidental or public spend.
 - These controls are process-local. A scaled deployment must add a shared
   limiter and a daily spend stop.
 
@@ -27,7 +30,8 @@
 
 - Civra uses one fixed official URL.
 - A source page that changes shape fails closed to unknown.
-- Requirement matches preserve evidence and source timestamp.
+- Requirement matches preserve evidence, source timestamp, and a versioned
+  public-source snapshot.
 - A document evidence match is never treated as a permit submission decision.
 
 ## Explicit non-goals
