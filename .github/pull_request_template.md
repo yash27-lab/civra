@@ -6,6 +6,7 @@ Describe the change and why it is needed.
 
 - [ ] Fail-closed behavior remains intact for unavailable or ambiguous evidence
 - [ ] No real owner documents or production credentials are included
+- [ ] Snapshot storage and deployment impact reviewed when source evidence changes
 
 ## CI and validation
 
