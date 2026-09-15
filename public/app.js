@@ -374,7 +374,10 @@ continueButton.addEventListener("click", async () => {
     const result = await response.json()
     if (!response.ok) throw new Error(result.message || "Civra could not verify this file.")
     showDocumentResult(result)
-    fileOk.textContent = "Document checked. Review the evidence below."
+    const remaining = Number.isInteger(result.remainingDocumentChecks)
+      ? ` ${result.remainingDocumentChecks} document check${result.remainingDocumentChecks === 1 ? "" : "s"} remain in this session.`
+      : ""
+    fileOk.textContent = "Document checked. Review the evidence below." + remaining
   } catch (error) {
     fileOk.textContent = error instanceof Error ? error.message : "Civra could not verify this file."
   } finally {
@@ -443,6 +446,9 @@ liveCheck.addEventListener("click", async () => {
     const found = statuses.filter(check => check.status === "found").length
     const missing = statuses.filter(check => check.status === "missing").length
     const note = result.fromCache ? " Shown from the last check." : ""
+    const budgetNote = Number.isInteger(result.remainingPermitChecks)
+      ? ` ${result.remainingPermitChecks} live permit check${result.remainingPermitChecks === 1 ? "" : "s"} remain in this session.`
+      : ""
     const snapshot = result.sourceSnapshot || {}
     const snapshotNote = snapshot.change === "changed"
       ? " The official page changed since the previous snapshot; review the evidence before relying on it."
@@ -450,8 +456,8 @@ liveCheck.addEventListener("click", async () => {
         ? " A new source snapshot was recorded for future change detection."
         : ""
     liveStatus.textContent = missing === 0
-      ? `Live check done. All ${found} permit needs were found on the city page.${note}${snapshotNote}`
-      : `Live check done. ${found} found and ${missing} not found on the city page. Please review.${note}${snapshotNote}`
+      ? `Live check done. All ${found} permit needs were found on the city page.${note}${budgetNote}${snapshotNote}`
+      : `Live check done. ${found} found and ${missing} not found on the city page. Please review.${note}${budgetNote}${snapshotNote}`
     loadSourceHistory()
   } catch (error) {
     liveStatus.textContent = error instanceof Error ? error.message : "The city check failed."
@@ -460,14 +466,20 @@ liveCheck.addEventListener("click", async () => {
   }
 })
 
-function showSession(isOpen) {
-  sessionOpen = isOpen
-  liveCheck.disabled = !isOpen
-  accessForm.hidden = isOpen
-  signOut.hidden = !isOpen
+function showSession(session) {
+  sessionOpen = Boolean(session && session.authenticated)
+  liveCheck.disabled = !sessionOpen
+  accessForm.hidden = sessionOpen
+  signOut.hidden = !sessionOpen
   updateDocumentButton()
-  liveStatus.textContent = isOpen
-    ? "Live check is unlocked for this browser."
+  const permitBudget = Number.isInteger(session && session.remainingPermitChecks)
+    ? ` ${session.remainingPermitChecks} live permit check${session.remainingPermitChecks === 1 ? "" : "s"} remain.`
+    : ""
+  const documentBudget = Number.isInteger(session && session.remainingDocumentChecks)
+    ? ` ${session.remainingDocumentChecks} document check${session.remainingDocumentChecks === 1 ? "" : "s"} remain.`
+    : ""
+  liveStatus.textContent = sessionOpen
+    ? "Live check is unlocked for this browser." + permitBudget + documentBudget
     : "Unlock before using the paid Solari check."
   loadSourceHistory()
 }
@@ -476,9 +488,9 @@ async function syncSession() {
   try {
     const response = await fetch("/api/session")
     const result = await response.json()
-    showSession(Boolean(result.authenticated))
+    showSession(result)
   } catch {
-    showSession(false)
+    showSession({ authenticated: false })
     liveStatus.textContent = "The server could not check your Civra session."
   }
 }
@@ -517,16 +529,21 @@ accessForm.addEventListener("submit", async event => {
     })
     const result = await response.json()
     if (!response.ok) throw new Error(result.message || "The access code was not accepted.")
-    showSession(true)
+    showSession(result)
   } catch (error) {
-    showSession(false)
+    showSession({ authenticated: false })
     liveStatus.textContent = error instanceof Error ? error.message : "The access code was not accepted."
   }
 })
 
 signOut.addEventListener("click", async () => {
-  await fetch("/api/session", { method: "DELETE" }).catch(() => undefined)
-  showSession(false)
+  try {
+    const response = await fetch("/api/session", { method: "DELETE" })
+    const result = await response.json()
+    showSession(result)
+  } catch {
+    showSession({ authenticated: false })
+  }
 })
 
 renderRenewals()
