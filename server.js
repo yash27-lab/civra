@@ -154,6 +154,15 @@ function createServer({
     return token
   }
 
+  function sessionPayload(session) {
+    if (!session) return { authenticated: false }
+    return {
+      authenticated: true,
+      remainingPermitChecks: Math.max(0, maxPermitChecksPerSession - session.permitChecks),
+      remainingDocumentChecks: Math.max(0, maxDocumentChecksPerSession - session.documentChecks)
+    }
+  }
+
   function sessionCookie(token, maxAge) {
     const secure = process.env.NODE_ENV === "production" ? "; Secure" : ""
     return `civra_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}${secure}`
@@ -208,7 +217,7 @@ function createServer({
       permitChecks: 0,
       documentChecks: 0
     })
-    sendJson(response, 200, { authenticated: true }, {
+    sendJson(response, 200, sessionPayload(sessions.get(token)), {
       "Set-Cookie": sessionCookie(token, Math.floor(sessionMs / 1000))
     })
   }
@@ -225,7 +234,11 @@ function createServer({
     const now = Date.now()
 
     if (cached && now < cached.expiresAt) {
-      sendJson(response, 200, { ...cached.value, fromCache: true })
+      sendJson(response, 200, {
+        ...cached.value,
+        fromCache: true,
+        remainingPermitChecks: Math.max(0, maxPermitChecksPerSession - session.permitChecks)
+      })
       return
     }
 
@@ -267,7 +280,11 @@ function createServer({
     try {
       const result = await inFlight
       cached = { value: result, expiresAt: Date.now() + cacheMs }
-      sendJson(response, 200, { ...result, fromCache: false })
+      sendJson(response, 200, {
+        ...result,
+        fromCache: false,
+        remainingPermitChecks: Math.max(0, maxPermitChecksPerSession - session.permitChecks)
+      })
     } catch (error) {
       cooldownUntil = Date.now() + cooldownMs
       const snapshotFailed = error && error.code === "SOURCE_SNAPSHOT_FAILED"
@@ -360,7 +377,10 @@ function createServer({
     documentChecksInFlight += 1
     try {
       const result = await verifyDocument({ apiKey: process.env.SOLARI_API_KEY, bytes })
-      sendJson(response, 200, result)
+      sendJson(response, 200, {
+        ...result,
+        remainingDocumentChecks: Math.max(0, maxDocumentChecksPerSession - session.documentChecks)
+      })
     } catch (error) {
       console.error("Document verification failed", error instanceof Error ? error.message : error)
       sendJson(response, 502, {
@@ -391,7 +411,8 @@ function createServer({
     }
 
     if (pathname === "/api/session" && request.method === "GET") {
-      sendJson(response, 200, { authenticated: Boolean(getSession(request)) })
+      const token = getSession(request)
+      sendJson(response, 200, sessionPayload(token ? sessions.get(token) : null))
       return true
     }
 
