@@ -3,7 +3,7 @@
   "version": "0.2.1",
   "private": true,
   "scripts": {
-    "check": "node --check server.js && node --check solari-service.js && node --check document-verification-service.js && node --check permit-requirements.js && node --check public/app.js && node --check ui-tests.js && npm test",
+    "check": "node --check server.js && node --check solari-service.js && node --check source-snapshot-store.js && node --check document-verification-service.js && node --check permit-requirements.js && node --check public/app.js && node --check ui-tests.js && npm test",
     "start": "node server.js",
     "test": "node --test tests.js ui-tests.js",
     "test:server": "node --test tests.js",
