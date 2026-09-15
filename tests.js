@@ -289,6 +289,40 @@ test("unknown files and unsafe methods are rejected", () => withServer(async bas
   assert.equal((await fetch(`${base}/`, { method: "POST" })).status, 405)
 }))
 
+test("a session reports its remaining paid-check budgets", () => withApiKey(() => {
+  const runCheck = async () => ({ pageVerified: true, reasons: [], checks: {} })
+  const verifyDocument = async () => ({ ok: true })
+
+  return withServer(async base => {
+    const opened = await openTestSession(base)
+    const initial = await opened.response.json()
+    assert.deepEqual(initial, {
+      authenticated: true,
+      remainingPermitChecks: 2,
+      remainingDocumentChecks: 1
+    })
+
+    const permit = await paidCheck(base, opened.cookie)
+    assert.equal((await permit.json()).remainingPermitChecks, 1)
+
+    const document = await documentCheck(base, opened.cookie, smallPdf())
+    assert.equal((await document.json()).remainingDocumentChecks, 0)
+
+    const current = await fetch(`${base}/api/session`, { headers: { Cookie: opened.cookie } })
+    assert.deepEqual(await current.json(), {
+      authenticated: true,
+      remainingPermitChecks: 1,
+      remainingDocumentChecks: 0
+    })
+  }, {
+    runCheck,
+    verifyDocument,
+    accessCode: "test_access",
+    maxPermitChecksPerSession: 2,
+    maxDocumentChecksPerSession: 1
+  })
+}))
+
 test("source history requires a private Civra session and returns public snapshots", () => withServer(async base => {
   const noSession = await fetch(`${base}/api/source-history`)
   assert.equal(noSession.status, 401)
