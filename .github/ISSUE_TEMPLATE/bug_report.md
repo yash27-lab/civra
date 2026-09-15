@@ -18,6 +18,7 @@ Provide the smallest safe reproduction. Do not attach real owner documents or cr
 - Node version:
 - Browser or HTTP client:
 - Is this a recorded-source check or document-verification flow?
+- Relevant `/api/health` capability status (with no secrets):
 
 ## Expected behavior
 
