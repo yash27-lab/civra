@@ -17,6 +17,10 @@ Describe the expected behavior and evidence boundary.
 
 How should unavailable or ambiguous evidence be handled?
 
+## Deployment impact
+
+Does this change require persistent storage, a new environment variable, or a new spend limit?
+
 ## Success criteria
 
 What observable outcome would make this complete?
