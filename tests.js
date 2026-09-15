@@ -514,7 +514,10 @@ test("a signature-verified upload is processed without writing a local file", ()
     const { cookie } = await openTestSession(base)
     const response = await documentCheck(base, cookie, smallPdf())
     assert.equal(response.status, 200)
-    assert.deepEqual(await response.json(), result)
+    assert.deepEqual(await response.json(), {
+      ...result,
+      remainingDocumentChecks: 2
+    })
     assert.equal(received.apiKey, "slr_test_key")
     assert.equal(identifySignature(received.bytes), "pdf")
   }, { verifyDocument, accessCode: "test_access" })
