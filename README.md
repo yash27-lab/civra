@@ -84,7 +84,7 @@ worse than no answer.
 The implementation is intentionally narrow: one NYC permit and one
 reviewable document-verification flow. See [the full architecture](docs/ARCHITECTURE.md).
 
-For local checks and safe contribution practices, see [CONTRIBUTING.md](CONTRIBUTING.md).
+For local checks and safe contribution practices, see [CONTRIBUTING.md](CONTRIBUTING.md). For deployment readiness and non-secret health status, see the [operations runbook](docs/OPERATIONS.md).
 
 ## Run locally
 
