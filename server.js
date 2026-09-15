@@ -109,6 +109,20 @@ function readCookie(request, name) {
   return null
 }
 
+function firstForwardedValue(value) {
+  return String(value || "").split(",")[0].trim()
+}
+
+function hasTrustedApiOrigin(request) {
+  const origin = request.headers.origin
+  if (!origin) return true
+
+  const protocol = firstForwardedValue(request.headers["x-forwarded-proto"]) ||
+    (request.socket.encrypted ? "https" : "http")
+  const host = firstForwardedValue(request.headers["x-forwarded-host"]) || request.headers.host
+  return Boolean(host) && origin === `${protocol}://${host}`
+}
+
 function createServer({
   runCheck = runPermitCheck,
   verifyDocument = runDocumentVerification,
@@ -359,6 +373,18 @@ function createServer({
   }
 
   async function handleApi(request, response, pathname) {
+    if (
+      pathname.startsWith("/api/") &&
+      ["POST", "DELETE"].includes(request.method) &&
+      !hasTrustedApiOrigin(request)
+    ) {
+      sendJson(response, 403, {
+        code: "UNTRUSTED_ORIGIN",
+        message: "Civra only accepts state-changing requests from this site."
+      })
+      return true
+    }
+
     if (pathname === "/api/health" && request.method === "GET") {
       sendJson(response, 200, { name: "civra", status: "ready" })
       return true
