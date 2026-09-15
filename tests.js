@@ -241,12 +241,37 @@ test("the server returns the app with strong browser headers", () => withServer(
   assert.match(await response.text(), /Civra/)
 }))
 
-test("the health check is ready and does not cache", () => withServer(async base => {
+test("the health check reports non-secret capability readiness", () => withApiKey(() => withServer(async base => {
   const response = await fetch(`${base}/api/health`)
   assert.equal(response.status, 200)
   assert.equal(response.headers.get("cache-control"), "no-store")
-  assert.deepEqual(await response.json(), { name: "civra", status: "ready" })
-}))
+  assert.deepEqual(await response.json(), {
+    name: "civra",
+    status: "ready",
+    capabilities: {
+      livePermitChecks: true,
+      documentVerification: true,
+      sourceSnapshotStorage: "local"
+    }
+  })
+}, { accessCode: "test_access" })))
+
+test("health exposes missing live-check configuration without secrets", async () => {
+  const savedKey = process.env.SOLARI_API_KEY
+  delete process.env.SOLARI_API_KEY
+  try {
+    await withServer(async base => {
+      const response = await fetch(`${base}/api/health`)
+      const health = await response.json()
+      assert.equal(health.status, "configuration_required")
+      assert.equal(health.capabilities.livePermitChecks, false)
+      assert.equal(health.capabilities.documentVerification, false)
+    }, { accessCode: "test_access" })
+  } finally {
+    if (savedKey === undefined) delete process.env.SOLARI_API_KEY
+    else process.env.SOLARI_API_KEY = savedKey
+  }
+})
 
 test("the live check fails safely when the server key is missing", async () => {
   const savedKey = process.env.SOLARI_API_KEY
