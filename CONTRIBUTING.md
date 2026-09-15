@@ -5,6 +5,7 @@ Keep changes focused and preserve Civra's fail-closed behavior: unsupported, una
 Before opening a pull request, run:
 
 ```bash
+npm ci
 npm run check
 ```
 
