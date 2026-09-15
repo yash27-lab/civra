@@ -241,20 +241,29 @@ test("the server returns the app with strong browser headers", () => withServer(
   assert.match(await response.text(), /Civra/)
 }))
 
-test("the health check reports non-secret capability readiness", () => withApiKey(() => withServer(async base => {
-  const response = await fetch(`${base}/api/health`)
-  assert.equal(response.status, 200)
-  assert.equal(response.headers.get("cache-control"), "no-store")
-  assert.deepEqual(await response.json(), {
-    name: "civra",
-    status: "ready",
-    capabilities: {
-      livePermitChecks: true,
-      documentVerification: true,
-      sourceSnapshotStorage: "local"
-    }
-  })
-}, { accessCode: "test_access" })))
+test("the health check reports non-secret capability readiness", async () => {
+  const savedDirectory = process.env.CIVRA_SOURCE_SNAPSHOT_DIR
+  delete process.env.CIVRA_SOURCE_SNAPSHOT_DIR
+  try {
+    await withApiKey(() => withServer(async base => {
+      const response = await fetch(`${base}/api/health`)
+      assert.equal(response.status, 200)
+      assert.equal(response.headers.get("cache-control"), "no-store")
+      assert.deepEqual(await response.json(), {
+        name: "civra",
+        status: "ready",
+        capabilities: {
+          livePermitChecks: true,
+          documentVerification: true,
+          sourceSnapshotStorage: "local"
+        }
+      })
+    }, { accessCode: "test_access" }))
+  } finally {
+    if (savedDirectory === undefined) delete process.env.CIVRA_SOURCE_SNAPSHOT_DIR
+    else process.env.CIVRA_SOURCE_SNAPSHOT_DIR = savedDirectory
+  }
+})
 
 test("health exposes missing live-check configuration without secrets", async () => {
   const savedKey = process.env.SOLARI_API_KEY
