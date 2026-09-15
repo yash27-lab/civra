@@ -58,7 +58,8 @@ worse than no answer.
   sandbox is destroyed after every attempt, deleting its temporary file.
 - Paid automation is gated by an HttpOnly, SameSite cookie, a server-only
   access code, per-session permit and document limits, a one-at-a-time sandbox
-  limit, cached city checks, and failure cooldowns.
+  limit, cached city checks, and failure cooldowns. The owner sees remaining
+  check budgets before starting another paid action.
 - The owner dashboard ranks tracked renewal dates for review without sending
   a notification, filing a renewal, or taking any external action.
 
