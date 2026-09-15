@@ -24,3 +24,7 @@ Does this change require persistent storage, a new environment variable, or a ne
 ## Success criteria
 
 What observable outcome would make this complete?
+
+## Test plan
+
+What offline or injected-boundary test should prove the feature works without spending a live API key?
