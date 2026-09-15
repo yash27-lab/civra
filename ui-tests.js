@@ -209,7 +209,11 @@ test("access code unlocks the paid check and lock closes it", async () => {
       return jsonResponse({ authenticated: false })
     }
     if (url === "/api/session" && options.method === "POST") {
-      return jsonResponse({ authenticated: true })
+      return jsonResponse({
+        authenticated: true,
+        remainingPermitChecks: 2,
+        remainingDocumentChecks: 1
+      })
     }
     if (url === "/api/session" && options.method === "DELETE") {
       return jsonResponse({ authenticated: false })
@@ -218,6 +222,7 @@ test("access code unlocks the paid check and lock closes it", async () => {
       return jsonResponse({
         pageVerified: true,
         fromCache: false,
+        remainingPermitChecks: 1,
         checks: {
           one: { status: "found" },
           two: { status: "found" },
@@ -241,10 +246,12 @@ test("access code unlocks the paid check and lock closes it", async () => {
   }))
   await nextTurn()
   assert.equal(document.querySelector("#liveCheck").disabled, false)
+  assert.match(document.querySelector("#liveStatus").textContent, /2 live permit checks remain/)
 
   document.querySelector("#liveCheck").click()
   await nextTurn()
   assert.match(document.querySelector("#liveStatus").textContent, /All 4 permit needs/)
+  assert.match(document.querySelector("#liveStatus").textContent, /1 live permit check remains/)
   const paidCall = calls.find(call => call.url === "/api/permit-check")
   assert.equal(paidCall.options.headers["X-Civra-Action"], "permit-check")
 
