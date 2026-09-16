@@ -23,6 +23,7 @@ const permitsCard = document.querySelector("#permitsCard")
 const renewalsCard = document.querySelector("#renewalsCard")
 const renewalSummary = document.querySelector("#renewalSummary")
 const renewalQueue = document.querySelector("#renewalQueue")
+const clearRenewals = document.querySelector("#clearRenewals")
 const historyCard = document.querySelector("#historyCard")
 const proofSummary = document.querySelector("#proofSummary")
 const proofSource = document.querySelector("#proofSource")
@@ -75,7 +76,8 @@ let tourStep = 0
 let toastTimer
 let selectedFile = null
 let sessionOpen = false
-const trackedRenewals = [
+const renewalStorageKey = "civra_renewals_v1"
+const defaultRenewals = [
   { name: "Food Service Permit", dueDate: "2026-09-21" },
   { name: "Food Handler Card", dueDate: "2027-06-14" }
 ]
@@ -84,6 +86,39 @@ function localDate(value) {
   const [year, month, day] = String(value).split("-").map(Number)
   return new Date(year, month - 1, day)
 }
+
+function validRenewal(value) {
+  const name = String(value && value.name || "").trim()
+  const dueDate = String(value && value.dueDate || "")
+  const date = localDate(dueDate)
+  const validDate = /^\d{4}-\d{2}-\d{2}$/.test(dueDate) && !Number.isNaN(date.valueOf()) &&
+    date.getFullYear() === Number(dueDate.slice(0, 4)) &&
+    date.getMonth() + 1 === Number(dueDate.slice(5, 7)) &&
+    date.getDate() === Number(dueDate.slice(8, 10))
+  return name && name.length <= 80 && validDate ? { name, dueDate } : null
+}
+
+function loadRenewals() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(renewalStorageKey) || "null")
+    if (!Array.isArray(saved)) return defaultRenewals.map(renewal => ({ ...renewal }))
+    const renewals = saved.map(validRenewal).filter(Boolean).slice(0, 50)
+    return renewals.length > 0 ? renewals : defaultRenewals.map(renewal => ({ ...renewal }))
+  } catch {
+    return defaultRenewals.map(renewal => ({ ...renewal }))
+  }
+}
+
+function saveRenewals() {
+  try {
+    window.localStorage.setItem(renewalStorageKey, JSON.stringify(trackedRenewals))
+    return true
+  } catch {
+    return false
+  }
+}
+
+let trackedRenewals = loadRenewals()
 
 function daysUntil(value) {
   const today = new Date()
@@ -236,6 +271,16 @@ document.querySelector("#closePermitForm").addEventListener("click", () => {
 })
 document.querySelector("#viewPermits").addEventListener("click", () => showAndFocus(permitsCard))
 document.querySelector("#viewHistory").addEventListener("click", () => showAndFocus(historyCard))
+clearRenewals.addEventListener("click", () => {
+  trackedRenewals = defaultRenewals.map(renewal => ({ ...renewal }))
+  try {
+    window.localStorage.removeItem(renewalStorageKey)
+  } catch {
+    // The visible queue still resets even if this browser blocks local storage.
+  }
+  renderRenewals()
+  showToast("Saved reminder dates were cleared from this browser.")
+})
 
 document.querySelectorAll(".nav").forEach(button => {
   button.addEventListener("click", () => {
@@ -416,13 +461,17 @@ addPermitForm.addEventListener("submit", event => {
   row.append(icon, details, state)
   document.querySelector(".permits").append(row)
   trackedRenewals.push({ name, dueDate: date })
+  const saved = saveRenewals()
   renderRenewals()
 
   permitForm.classList.remove("show")
   permitForm.setAttribute("aria-hidden", "true")
   addPermitForm.reset()
   showAndFocus(permitsCard)
-  showToast(`${name} was added to this demo.`)
+  showToast(saved
+    ? `${name} was saved in this browser for renewal review.`
+    : `${name} was added for this page, but this browser could not save the reminder.`
+  )
 })
 
 liveCheck.addEventListener("click", async () => {
