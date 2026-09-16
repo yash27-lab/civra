@@ -14,7 +14,7 @@ function jsonResponse(value, { ok = true, status = 200 } = {}) {
 function loadPage(fetchImpl = async url => {
   if (url === "/api/session") return jsonResponse({ authenticated: false })
   return jsonResponse({ message: "Not ready" }, { ok: false, status: 503 })
-}) {
+}, prepareWindow = () => undefined) {
   const dom = new JSDOM(html, {
     runScripts: "outside-only",
     url: "http://localhost:4173/"
@@ -24,6 +24,7 @@ function loadPage(fetchImpl = async url => {
   window.scrollTo = () => undefined
   window.requestAnimationFrame = callback => callback()
   window.HTMLElement.prototype.scrollIntoView = () => undefined
+  prepareWindow(window)
   window.eval(script)
   return dom
 }
@@ -63,11 +64,15 @@ test("main menu, task, guide, and add permit actions work", async () => {
 })
 
 test("renewal review prioritizes owner action and tracks added permits", async () => {
-  const dom = loadPage()
+  const dom = loadPage(undefined, window => {
+    window.localStorage.setItem("civra_renewals_v1", JSON.stringify([
+      { name: "Stored Health Permit", dueDate: "2026-09-18" }
+    ]))
+  })
   const { document, Event } = dom.window
   await nextTurn()
 
-  assert.match(document.querySelector("#renewalQueue").textContent, /Food Service Permit/)
+  assert.match(document.querySelector("#renewalQueue").textContent, /Stored Health Permit/)
   assert.match(document.querySelector("#renewalSummary").textContent, /owner review/i)
 
   const due = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -81,6 +86,11 @@ test("renewal review prioritizes owner action and tracks added permits", async (
 
   assert.match(document.querySelector("#renewalQueue").textContent, /Sidewalk Cafe Permit/)
   assert.match(document.querySelector("#renewalQueue").textContent, /Review now/)
+  assert.match(document.querySelector("#renewalQueue").textContent, /Stored Health Permit/)
+  assert.match(dom.window.localStorage.getItem("civra_renewals_v1"), /Sidewalk Cafe Permit/)
+  document.querySelector("#clearRenewals").click()
+  assert.equal(dom.window.localStorage.getItem("civra_renewals_v1"), null)
+  assert.ok(!document.querySelector("#renewalQueue").textContent.includes("Sidewalk Cafe Permit"))
   document.querySelector('[data-page="renewals"]').click()
   assert.ok(document.querySelector('[data-page="renewals"]').classList.contains("active"))
 
