@@ -26,6 +26,13 @@
 - These controls are process-local. A scaled deployment must add a shared
   limiter and a daily spend stop.
 
+## Local reminder data
+
+- Renewal names and due dates are stored only in the owner's browser storage.
+- Civra does not upload, sync, or use those reminders to send notifications.
+- Clearing saved dates removes the browser-local reminder data and restores the
+  built-in demo reminders.
+
 ## Permit accuracy
 
 - Civra uses one fixed official URL.
