@@ -60,8 +60,9 @@ worse than no answer.
   access code, per-session permit and document limits, a one-at-a-time sandbox
   limit, cached city checks, and failure cooldowns. The owner sees remaining
   check budgets before starting another paid action.
-- The owner dashboard ranks tracked renewal dates for review without sending
-  a notification, filing a renewal, or taking any external action.
+- The owner dashboard ranks tracked renewal dates for review and persists
+  reminder names and dates in the same browser only; it never sends a
+  notification, files a renewal, or takes any external action.
 
 ## What Civra deliberately does not do
 
@@ -118,8 +119,8 @@ the evidence or reason for each result.
 ## Planned next steps
 
 1. Configure shared durable snapshot storage for multi-instance deployments.
-2. Persist owner-reviewed renewal reminders across sessions and add explicit
-   opt-in before any notification delivery.
+2. Design opt-in cross-device renewal synchronization and notification
+   delivery without weakening owner control.
 3. Conduct and publish anonymized interviews with NYC food-business owners,
    accountants, and permit expediters.
 
