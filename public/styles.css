@@ -76,6 +76,8 @@ h3 { font-size:22px; margin-bottom:0; }
 .securityitem small { margin-top:5px; color:#acb8b2; font-size:11px; line-height:1.5; }
 .card,.recent { background:var(--paper); border:1px solid var(--line); border-radius:13px; padding:26px; }
 .renewals { margin-top:22px; }
+.renewalactions { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.renewalactions button { white-space:nowrap; }
 .renewalsummary { margin:0 0 14px; color:#5f6b64; font-size:13px; }
 .renewalqueue { border-top:1px solid #e9ece8; }
 .renewalrow { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid #e9ece8; }
