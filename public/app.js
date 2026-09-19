@@ -23,6 +23,7 @@ const permitsCard = document.querySelector("#permitsCard")
 const renewalsCard = document.querySelector("#renewalsCard")
 const renewalSummary = document.querySelector("#renewalSummary")
 const renewalQueue = document.querySelector("#renewalQueue")
+const downloadRenewals = document.querySelector("#downloadRenewals")
 const clearRenewals = document.querySelector("#clearRenewals")
 const historyCard = document.querySelector("#historyCard")
 const proofSummary = document.querySelector("#proofSummary")
@@ -119,6 +120,76 @@ function saveRenewals() {
 }
 
 let trackedRenewals = loadRenewals()
+
+function formatIcsDate(date) {
+  const pad = value => String(value).padStart(2, "0")
+  return String(date.getFullYear()) + pad(date.getMonth() + 1) + pad(date.getDate())
+}
+
+function icsEscape(value) {
+  return String(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r?\n/g, "\\n")
+}
+
+function buildRenewalCalendar(renewals) {
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  const timestamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Civra//Owner Renewal Review//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH"
+  ]
+
+  renewals
+    .slice()
+    .sort((left, right) => left.dueDate.localeCompare(right.dueDate))
+    .forEach((renewal, index) => {
+      const reviewDate = localDate(renewal.dueDate)
+      reviewDate.setDate(reviewDate.getDate() - 30)
+      if (reviewDate < now) reviewDate.setTime(now.getTime())
+      const endDate = new Date(reviewDate)
+      endDate.setDate(endDate.getDate() + 1)
+      const uid = "civra-" + index + "-" + renewal.dueDate.replace(/-/g, "") + "@local"
+      lines.push(
+        "BEGIN:VEVENT",
+        "UID:" + uid,
+        "DTSTAMP:" + timestamp,
+        "DTSTART;VALUE=DATE:" + formatIcsDate(reviewDate),
+        "DTEND;VALUE=DATE:" + formatIcsDate(endDate),
+        "SUMMARY:" + icsEscape("Review renewal: " + renewal.name),
+        "DESCRIPTION:" + icsEscape("Created locally by Civra for owner review only. Civra will not submit, pay, or notify anyone."),
+        "END:VEVENT"
+      )
+    })
+
+  lines.push("END:VCALENDAR")
+  return lines.join("\r\n") + "\r\n"
+}
+
+function downloadRenewalCalendar() {
+  try {
+    const calendar = buildRenewalCalendar(trackedRenewals)
+    const blob = new Blob([calendar], { type: "text/calendar;charset=utf-8" })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = "civra-renewal-review.ics"
+    link.hidden = true
+    document.body.append(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    showToast("Renewal review calendar downloaded. Import it only into a calendar you control.")
+  } catch {
+    showToast("Civra could not create the renewal calendar file in this browser.")
+  }
+}
 
 function daysUntil(value) {
   const today = new Date()
@@ -271,6 +342,7 @@ document.querySelector("#closePermitForm").addEventListener("click", () => {
 })
 document.querySelector("#viewPermits").addEventListener("click", () => showAndFocus(permitsCard))
 document.querySelector("#viewHistory").addEventListener("click", () => showAndFocus(historyCard))
+downloadRenewals.addEventListener("click", downloadRenewalCalendar)
 clearRenewals.addEventListener("click", () => {
   trackedRenewals = defaultRenewals.map(renewal => ({ ...renewal }))
   try {
