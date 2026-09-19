@@ -97,6 +97,24 @@ test("renewal review prioritizes owner action and tracks added permits", async (
   dom.window.close()
 })
 
+test("renewal calendar export creates owner-review events", async () => {
+  const dom = loadPage()
+  await nextTurn()
+
+  const calendar = dom.window.buildRenewalCalendar([{
+    name: "Café, Inc; Permit",
+    dueDate: "2026-12-31"
+  }])
+
+  assert.match(calendar, /^BEGIN:VCALENDAR\r\nVERSION:2.0/m)
+  assert.match(calendar, /SUMMARY:Review renewal: Café\\, Inc\\; Permit/)
+  assert.match(calendar, /DTSTART;VALUE=DATE:\d{8}/)
+  assert.match(calendar, /DESCRIPTION:Created locally by Civra/)
+  assert.match(calendar, /END:VCALENDAR\r\n$/)
+
+  dom.window.close()
+})
+
 test("document selection does not trust browser MIME and requires an unlocked session", async () => {
   const dom = loadPage()
   const { document, Event, File } = dom.window
