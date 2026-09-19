@@ -30,6 +30,8 @@
 
 - Renewal names and due dates are stored only in the owner's browser storage.
 - Civra does not upload, sync, or use those reminders to send notifications.
+- Calendar export creates a local `.ics` download only after an owner click; it
+  does not access or modify a calendar account.
 - Clearing saved dates removes the browser-local reminder data and restores the
   built-in demo reminders.
 
