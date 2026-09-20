@@ -229,6 +229,58 @@ test("an unlocked owner can review recorded source history", async () => {
   dom.window.close()
 })
 
+test("source history opens only the selected recorded evidence", async () => {
+  const snapshotId = "a".repeat(64)
+  const calls = []
+  const fetchImpl = async url => {
+    calls.push(url)
+    if (url === "/api/session") return jsonResponse({ authenticated: true })
+    if (url === "/api/source-history") {
+      return jsonResponse({ snapshots: [{
+        snapshotId,
+        title: "Food Service Establishment Permit - NYC Business",
+        pageVerified: true,
+        lastObservedAt: "2026-09-12T09:00:00.000Z"
+      }] })
+    }
+    if (url === "/api/source-history/" + snapshotId) {
+      return jsonResponse({ snapshot: {
+        snapshotId,
+        sourceFingerprint: snapshotId,
+        source: "https://example.com/official",
+        pageVerified: true,
+        checks: {
+          salesTax: {
+            label: "Sales tax proof",
+            status: "found",
+            reason: "Matched official page language.",
+            evidence: "Certificate of Authority to Collect Sales Tax."
+          }
+        }
+      } })
+    }
+    return jsonResponse({}, { ok: false, status: 404 })
+  }
+
+  const dom = loadPage(fetchImpl)
+  await nextTurn()
+  await nextTurn()
+  dom.window.document.querySelector(".sourcehistorybutton").click()
+  await nextTurn()
+  await nextTurn()
+
+  const { document } = dom.window
+  assert.equal(document.querySelector("#sourceEvidence").hidden, false)
+  assert.match(document.querySelector("#sourceEvidence").textContent, /Sales tax proof/)
+  assert.match(document.querySelector("#sourceEvidence").textContent, /Certificate of Authority/)
+  assert.equal(document.querySelector("#sourceEvidenceLink").href, "https://example.com/official")
+  assert.ok(calls.includes("/api/source-history/" + snapshotId))
+
+  document.querySelector("#closeSourceEvidence").click()
+  assert.equal(document.querySelector("#sourceEvidence").hidden, true)
+  dom.window.close()
+})
+
 test("access code unlocks the paid check and lock closes it", async () => {
   const calls = []
   const fetchImpl = async (url, options = {}) => {
