@@ -86,6 +86,29 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
     }
   }
 
+  function publicEvidence(snapshot) {
+    if (!snapshot) return null
+    return {
+      snapshotId: snapshot.snapshotId,
+      source: snapshot.source,
+      finalUrl: snapshot.finalUrl,
+      title: snapshot.title,
+      sourceFingerprint: snapshot.sourceFingerprint,
+      pageVerified: snapshot.pageVerified,
+      reasons: snapshot.reasons,
+      checks: snapshot.checks,
+      firstObservedAt: snapshot.firstObservedAt,
+      lastObservedAt: snapshot.lastObservedAt,
+      observationCount: snapshot.observationCount
+    }
+  }
+
+  async function get(snapshotId) {
+    const validSnapshotId = snapshotIdFor(snapshotId)
+    const snapshot = await readJson(path.join(directory, `${validSnapshotId}.json`))
+    return publicEvidence(snapshot)
+  }
+
   async function list({ limit = 10 } = {}) {
     let entries
     try {
@@ -105,20 +128,23 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
       .filter(Boolean)
       .sort((left, right) => String(right.lastObservedAt).localeCompare(String(left.lastObservedAt)))
       .slice(0, Math.max(0, limit))
-      .map(snapshot => ({
-        snapshotId: snapshot.snapshotId,
-        source: snapshot.source,
-        finalUrl: snapshot.finalUrl,
-        title: snapshot.title,
-        pageVerified: snapshot.pageVerified,
-        reasons: snapshot.reasons,
-        firstObservedAt: snapshot.firstObservedAt,
-        lastObservedAt: snapshot.lastObservedAt,
-        observationCount: snapshot.observationCount
-      }))
+      .map(snapshot => {
+        const evidence = publicEvidence(snapshot)
+        return {
+          snapshotId: evidence.snapshotId,
+          source: evidence.source,
+          finalUrl: evidence.finalUrl,
+          title: evidence.title,
+          pageVerified: evidence.pageVerified,
+          reasons: evidence.reasons,
+          firstObservedAt: evidence.firstObservedAt,
+          lastObservedAt: evidence.lastObservedAt,
+          observationCount: evidence.observationCount
+        }
+      })
   }
 
-  return { directory, record, list }
+  return { directory, record, get, list }
 }
 
 module.exports = { createSourceSnapshotStore, snapshotIdFor }
