@@ -31,6 +31,12 @@ const proofSource = document.querySelector("#proofSource")
 const sourceHistoryCard = document.querySelector("#sourceHistoryCard")
 const sourceHistoryStatus = document.querySelector("#sourceHistoryStatus")
 const sourceHistoryList = document.querySelector("#sourceHistoryList")
+const sourceEvidence = document.querySelector("#sourceEvidence")
+const sourceEvidenceTitle = document.querySelector("#sourceEvidenceTitle")
+const sourceEvidenceMeta = document.querySelector("#sourceEvidenceMeta")
+const sourceEvidenceChecks = document.querySelector("#sourceEvidenceChecks")
+const sourceEvidenceLink = document.querySelector("#sourceEvidenceLink")
+const closeSourceEvidence = document.querySelector("#closeSourceEvidence")
 const documentReport = document.querySelector("#documentReport")
 const documentTitle = document.querySelector("#documentTitle")
 const documentSummary = document.querySelector("#documentSummary")
@@ -268,8 +274,80 @@ function renderSourceHistory(snapshots) {
     status.className = `pill sourcehistorystate ${snapshot.pageVerified ? "verified" : "review"}`
     status.textContent = snapshot.pageVerified ? "Verified" : "Review"
 
-    row.append(details, fingerprint, status)
+    const review = document.createElement("button")
+    review.type = "button"
+    review.className = "sourcehistorybutton"
+    review.dataset.snapshotId = snapshot.snapshotId
+    review.textContent = "Review evidence"
+
+    row.append(details, fingerprint, status, review)
     sourceHistoryList.append(row)
+  }
+}
+
+function hideSourceEvidence() {
+  sourceEvidence.hidden = true
+  sourceEvidenceChecks.replaceChildren()
+  sourceEvidenceLink.hidden = true
+  sourceEvidenceLink.removeAttribute("href")
+}
+
+function renderSourceEvidence(snapshot) {
+  sourceEvidence.hidden = false
+  sourceEvidenceTitle.textContent = snapshot.title || snapshot.source || "Recorded source evidence"
+  const observedAt = snapshot.lastObservedAt ? new Date(snapshot.lastObservedAt).toLocaleString() : "an unknown time"
+  const state = snapshot.pageVerified ? "passed Civra's source checks" : "needs owner review"
+  sourceEvidenceMeta.textContent = `Recorded ${observedAt}. This snapshot ${state}. Fingerprint ${String(snapshot.sourceFingerprint || snapshot.snapshotId).slice(0, 16)}.`
+
+  sourceEvidenceChecks.replaceChildren()
+  const checks = Object.entries(snapshot.checks || {})
+  if (checks.length === 0) {
+    const empty = document.createElement("p")
+    empty.textContent = "No requirement evidence was recorded for this snapshot."
+    sourceEvidenceChecks.append(empty)
+  }
+  for (const [key, check] of checks) {
+    const row = document.createElement("article")
+    row.className = "sourceevidencecheck " + (check.status || "unknown")
+    const title = document.createElement("strong")
+    title.textContent = check.label || key
+    const status = document.createElement("span")
+    status.textContent = String(check.status || "unknown").toUpperCase()
+    const reason = document.createElement("p")
+    reason.textContent = check.reason || "No review note was recorded."
+    row.append(title, status, reason)
+    if (check.evidence) {
+      const excerpt = document.createElement("blockquote")
+      excerpt.textContent = check.evidence
+      row.append(excerpt)
+    }
+    sourceEvidenceChecks.append(row)
+  }
+
+  const sourceUrl = snapshot.finalUrl || snapshot.source
+  if (sourceUrl) {
+    sourceEvidenceLink.href = sourceUrl
+    sourceEvidenceLink.hidden = false
+  } else {
+    sourceEvidenceLink.hidden = true
+    sourceEvidenceLink.removeAttribute("href")
+  }
+}
+
+async function loadSourceEvidence(snapshotId) {
+  sourceEvidence.hidden = false
+  sourceEvidenceTitle.textContent = "Loading recorded source evidence"
+  sourceEvidenceMeta.textContent = "Civra is loading the saved official-page evidence."
+  sourceEvidenceChecks.replaceChildren()
+  sourceEvidenceLink.hidden = true
+  try {
+    const response = await fetch("/api/source-history/" + encodeURIComponent(snapshotId))
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || "Civra could not load this source evidence.")
+    renderSourceEvidence(result.snapshot || {})
+  } catch (error) {
+    sourceEvidenceTitle.textContent = "Recorded source evidence unavailable"
+    sourceEvidenceMeta.textContent = error instanceof Error ? error.message : "Civra could not load this source evidence."
   }
 }
 
@@ -277,6 +355,7 @@ async function loadSourceHistory() {
   if (!sessionOpen) {
     sourceHistoryStatus.textContent = "Unlock Civra to review recorded source history."
     sourceHistoryList.replaceChildren()
+    hideSourceEvidence()
     return
   }
 
@@ -342,6 +421,11 @@ document.querySelector("#closePermitForm").addEventListener("click", () => {
 })
 document.querySelector("#viewPermits").addEventListener("click", () => showAndFocus(permitsCard))
 document.querySelector("#viewHistory").addEventListener("click", () => showAndFocus(historyCard))
+sourceHistoryList.addEventListener("click", event => {
+  const button = event.target.closest(".sourcehistorybutton")
+  if (button && button.dataset.snapshotId) loadSourceEvidence(button.dataset.snapshotId)
+})
+closeSourceEvidence.addEventListener("click", hideSourceEvidence)
 downloadRenewals.addEventListener("click", downloadRenewalCalendar)
 clearRenewals.addEventListener("click", () => {
   trackedRenewals = defaultRenewals.map(renewal => ({ ...renewal }))
