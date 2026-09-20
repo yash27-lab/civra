@@ -314,6 +314,26 @@ function createServer({
     }
   }
 
+  async function handleSourceSnapshot(response, snapshotId) {
+    try {
+      const snapshot = await snapshotStore.get(snapshotId)
+      if (!snapshot) {
+        sendJson(response, 404, {
+          code: "SOURCE_SNAPSHOT_NOT_FOUND",
+          message: "That recorded source snapshot is not available."
+        })
+        return
+      }
+      sendJson(response, 200, { snapshot })
+    } catch (error) {
+      console.error("Source snapshot unavailable", error instanceof Error ? error.message : error)
+      sendJson(response, 503, {
+        code: "SOURCE_SNAPSHOT_UNAVAILABLE",
+        message: "Civra could not load the recorded source evidence."
+      })
+    }
+  }
+
   async function handleSourceHistory(response) {
     try {
       const snapshots = await snapshotStore.list({ limit: snapshotHistoryLimit })
@@ -445,6 +465,21 @@ function createServer({
         return true
       }
       await handleSourceHistory(response)
+      return true
+    }
+
+    const sourceSnapshotMatch = pathname.match(/^\/api\/source-history\/([a-f0-9]{64})$/)
+    if (sourceSnapshotMatch && request.method === "GET") {
+      const token = getSession(request)
+      const session = token ? sessions.get(token) : null
+      if (!session) {
+        sendJson(response, 401, {
+          code: "AUTH_REQUIRED",
+          message: "Unlock Civra before reviewing recorded source evidence."
+        })
+        return true
+      }
+      await handleSourceSnapshot(response, sourceSnapshotMatch[1])
       return true
     }
 
