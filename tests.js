@@ -71,6 +71,12 @@ test("source snapshots retain the current fingerprint and change history", async
     assert.equal(history.length, 2)
     assert.equal(history[0].snapshotId, changed.snapshotId)
 
+    const evidence = await store.get(first.snapshotId)
+    assert.equal(evidence.sourceFingerprint, first.snapshotId)
+    assert.equal(evidence.checks.salesTax, undefined)
+    assert.equal(evidence.observationCount, 2)
+    assert.equal(await store.get("b".repeat(64)), null)
+
     const stored = JSON.parse(await fs.readFile(path.join(directory, `${first.snapshotId}.json`), "utf8"))
     assert.equal(Object.hasOwn(stored, "text"), false)
   } finally {
@@ -164,6 +170,7 @@ async function withServer(run, options = {}) {
         previousSnapshotId: null,
         observedAt: result.checkedAt || "2026-09-01T00:00:00.000Z"
       }),
+      get: async () => null,
       list: async () => []
     },
     ...serverOptions
@@ -374,7 +381,42 @@ test("source history requires a private Civra session and returns public snapsho
   accessCode: "test_access",
   snapshotStore: {
     record: async () => ({ snapshotId: "a".repeat(64), change: "first_observation" }),
+    get: async () => null,
     list: async () => [{ snapshotId: "a".repeat(64), source: PERMIT_URL, pageVerified: true }]
+  }
+}))
+
+test("source evidence needs a private session and returns recorded requirement excerpts", () => withServer(async base => {
+  const snapshotId = "b".repeat(64)
+  const anonymous = await fetch(`${base}/api/source-history/${snapshotId}`)
+  assert.equal(anonymous.status, 401)
+
+  const { cookie } = await openTestSession(base)
+  const response = await fetch(`${base}/api/source-history/${snapshotId}`, { headers: { Cookie: cookie } })
+  assert.equal(response.status, 200)
+  assert.deepEqual(await response.json(), {
+    snapshot: {
+      snapshotId,
+      source: PERMIT_URL,
+      pageVerified: true,
+      checks: {
+        salesTax: { status: "found", evidence: "Certificate of Authority to Collect Sales Tax." }
+      }
+    }
+  })
+}, {
+  accessCode: "test_access",
+  snapshotStore: {
+    record: async () => ({ snapshotId: "b".repeat(64), change: "first_observation" }),
+    get: async snapshotId => ({
+      snapshotId,
+      source: PERMIT_URL,
+      pageVerified: true,
+      checks: {
+        salesTax: { status: "found", evidence: "Certificate of Authority to Collect Sales Tax." }
+      }
+    }),
+    list: async () => []
   }
 }))
 
