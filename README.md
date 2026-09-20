@@ -42,7 +42,8 @@ worse than no answer.
   must all agree; otherwise every result is unknown.
 - Each found city requirement includes the matching official-page excerpt,
   source timestamp, and a persisted source snapshot with normalized fingerprint
-  and change status.
+  and change status. An unlocked owner can open a saved snapshot to inspect its
+  recorded requirement evidence without launching another browser run.
 - A protected document route accepts a PDF, JPEG, or PNG up to 10 MB, checks
   its magic bytes before any extraction, and verifies those bytes a second time
   in an ephemeral Solari sandbox.
