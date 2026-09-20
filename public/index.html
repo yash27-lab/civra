@@ -4,7 +4,7 @@
   <meta charset="utf8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Civra</title>
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
   <aside class="side">
@@ -58,6 +58,13 @@
       <div class="cardtop"><div><p class="eyebrow">SOURCE HISTORY</p><h3>Review what Civra recorded from the official page.</h3></div></div>
       <p class="sourcehistorystatus" id="sourceHistoryStatus" aria-live="polite">Unlock Civra to review recorded source history.</p>
       <div class="sourcehistorylist" id="sourceHistoryList"></div>
+      <section class="sourceevidence" id="sourceEvidence" aria-live="polite" hidden>
+        <div class="cardtop"><div><p class="eyebrow">SNAPSHOT EVIDENCE</p><h3 id="sourceEvidenceTitle">Recorded source evidence</h3></div><button id="closeSourceEvidence" type="button">Close evidence</button></div>
+        <p class="sourceevidencemeta" id="sourceEvidenceMeta"></p>
+        <div class="sourceevidencechecks" id="sourceEvidenceChecks"></div>
+        <a class="sourceevidencelink" id="sourceEvidenceLink" target="_blank" rel="noreferrer" hidden>Open official source</a>
+        <p class="sourceevidencenote">These excerpts are recorded evidence from the official page, not approval to submit or a substitute for owner review.</p>
+      </section>
     </section>
 
     <section class="story">
@@ -194,6 +201,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
