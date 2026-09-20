@@ -12,7 +12,7 @@ If Civra cannot write the source snapshot, the live check fails closed and retur
 
 ## Reviewing history
 
-An unlocked Civra session can retrieve recent snapshots from `GET /api/source-history`. This read-only endpoint does not launch a browser or spend a Solari API call. The owner dashboard shows the recorded title, observation time, truncated snapshot ID, and whether the source passed the trust gates.
+An unlocked Civra session can retrieve recent snapshots from `GET /api/source-history`. Selecting a specific snapshot uses `GET /api/source-history/:snapshotId` to return its recorded requirement statuses, review notes, and official-page excerpts. Both endpoints are read-only, require the private Civra session, never return owner uploads or secrets, and do not launch a browser or spend a Solari API call. The owner dashboard shows the recorded title, observation time, truncated snapshot ID, trust-gate outcome, and an evidence view for the selected snapshot.
 
 ## Deployment
 
