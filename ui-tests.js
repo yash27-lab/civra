@@ -281,6 +281,69 @@ test("source history opens only the selected recorded evidence", async () => {
   dom.window.close()
 })
 
+test("an owner can compare a changed source snapshot without a live check", async () => {
+  const currentId = "a".repeat(64)
+  const previousId = "b".repeat(64)
+  const calls = []
+  const fetchImpl = async url => {
+    calls.push(url)
+    if (url === "/api/session") return jsonResponse({ authenticated: true })
+    if (url === "/api/source-history") {
+      return jsonResponse({ snapshots: [{
+        snapshotId: currentId,
+        title: "Food Service Establishment Permit - NYC Business",
+        pageVerified: true,
+        previousSnapshotId: previousId,
+        lastObservedAt: "2026-09-20T09:00:00.000Z"
+      }] })
+    }
+    if (url === "/api/source-history/" + currentId) {
+      return jsonResponse({ snapshot: {
+        snapshotId: currentId,
+        sourceFingerprint: currentId,
+        source: "https://example.com/official",
+        previousSnapshotId: previousId,
+        pageVerified: true,
+        checks: {}
+      } })
+    }
+    if (url === "/api/source-history/" + currentId + "/compare") {
+      return jsonResponse({ comparison: {
+        current: { snapshotId: currentId },
+        previous: { snapshotId: previousId },
+        unchangedCount: 3,
+        changes: [{
+          key: "insurance",
+          label: "Insurance proof",
+          kind: "changed",
+          before: { status: "found", evidence: "Workers compensation." },
+          after: { status: "missing", evidence: null }
+        }]
+      } })
+    }
+    return jsonResponse({}, { ok: false, status: 404 })
+  }
+
+  const dom = loadPage(fetchImpl)
+  await nextTurn()
+  await nextTurn()
+  dom.window.document.querySelector(".sourcehistorybutton").click()
+  await nextTurn()
+  await nextTurn()
+  assert.equal(dom.window.document.querySelector("#compareSourceEvidence").hidden, false)
+
+  dom.window.document.querySelector("#compareSourceEvidence").click()
+  await nextTurn()
+  await nextTurn()
+  const { document } = dom.window
+  assert.equal(document.querySelector("#sourceComparison").hidden, false)
+  assert.match(document.querySelector("#sourceComparison").textContent, /Insurance proof/)
+  assert.match(document.querySelector("#sourceComparison").textContent, /Before: found/)
+  assert.match(document.querySelector("#sourceComparison").textContent, /Now: missing/)
+  assert.ok(calls.includes("/api/source-history/" + currentId + "/compare"))
+  dom.window.close()
+})
+
 test("access code unlocks the paid check and lock closes it", async () => {
   const calls = []
   const fetchImpl = async (url, options = {}) => {
