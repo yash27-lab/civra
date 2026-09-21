@@ -43,7 +43,9 @@ test("source snapshots retain the current fingerprint and change history", async
       sourceFingerprint: sourceFingerprint(goodPage),
       pageVerified: true,
       reasons: [],
-      checks: {}
+      checks: {
+        salesTax: { label: "Sales tax proof", status: "found", reason: "Matched.", evidence: "Certificate of Authority." }
+      }
     }
     const first = await store.record(firstCheck)
     assert.equal(first.change, "first_observation")
@@ -59,7 +61,10 @@ test("source snapshots retain the current fingerprint and change history", async
     const changed = await store.record({
       ...firstCheck,
       checkedAt: "2026-09-02T00:00:00.000Z",
-      sourceFingerprint: sourceFingerprint(changedPage)
+      sourceFingerprint: sourceFingerprint(changedPage),
+      checks: {
+        salesTax: { label: "Sales tax proof", status: "missing", reason: "No match found.", evidence: null }
+      }
     })
     assert.equal(changed.change, "changed")
     assert.equal(changed.previousSnapshotId, first.snapshotId)
@@ -70,6 +75,14 @@ test("source snapshots retain the current fingerprint and change history", async
     const history = await store.list()
     assert.equal(history.length, 2)
     assert.equal(history[0].snapshotId, changed.snapshotId)
+    assert.equal(history[0].previousSnapshotId, first.snapshotId)
+
+    const comparison = await store.compare(changed.snapshotId)
+    assert.equal(comparison.previous.snapshotId, first.snapshotId)
+    assert.equal(comparison.changes.length, 1)
+    assert.equal(comparison.changes[0].key, "salesTax")
+    assert.equal(comparison.changes[0].before.status, "found")
+    assert.equal(comparison.changes[0].after.status, "missing")
 
     const evidence = await store.get(first.snapshotId)
     assert.equal(evidence.sourceFingerprint, first.snapshotId)
@@ -171,6 +184,7 @@ async function withServer(run, options = {}) {
         observedAt: result.checkedAt || "2026-09-01T00:00:00.000Z"
       }),
       get: async () => null,
+      compare: async () => ({ current: null, previous: null, changes: [], unchangedCount: 0 }),
       list: async () => []
     },
     ...serverOptions
@@ -383,6 +397,45 @@ test("source history requires a private Civra session and returns public snapsho
     record: async () => ({ snapshotId: "a".repeat(64), change: "first_observation" }),
     get: async () => null,
     list: async () => [{ snapshotId: "a".repeat(64), source: PERMIT_URL, pageVerified: true }]
+  }
+}))
+
+test("source comparison needs a private session and returns only recorded changes", () => withServer(async base => {
+  const snapshotId = "c".repeat(64)
+  const anonymous = await fetch(`${base}/api/source-history/${snapshotId}/compare`)
+  assert.equal(anonymous.status, 401)
+
+  const { cookie } = await openTestSession(base)
+  const response = await fetch(`${base}/api/source-history/${snapshotId}/compare`, { headers: { Cookie: cookie } })
+  assert.equal(response.status, 200)
+  const body = await response.json()
+  assert.equal(body.comparison.current.snapshotId, snapshotId)
+  assert.equal(body.comparison.previous.snapshotId, "d".repeat(64))
+  assert.deepEqual(body.comparison.changes, [{
+    key: "insurance",
+    label: "Insurance proof",
+    kind: "changed",
+    before: { label: "Insurance proof", status: "found", reason: "Matched.", evidence: "Workers compensation." },
+    after: { label: "Insurance proof", status: "missing", reason: "No match found.", evidence: null }
+  }])
+}, {
+  accessCode: "test_access",
+  snapshotStore: {
+    record: async () => ({ snapshotId: "c".repeat(64), change: "first_observation" }),
+    get: async () => null,
+    compare: async snapshotId => ({
+      current: { snapshotId },
+      previous: { snapshotId: "d".repeat(64) },
+      changes: [{
+        key: "insurance",
+        label: "Insurance proof",
+        kind: "changed",
+        before: { label: "Insurance proof", status: "found", reason: "Matched.", evidence: "Workers compensation." },
+        after: { label: "Insurance proof", status: "missing", reason: "No match found.", evidence: null }
+      }],
+      unchangedCount: 3
+    }),
+    list: async () => []
   }
 }))
 
