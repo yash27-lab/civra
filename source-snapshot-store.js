@@ -113,9 +113,13 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
         ? "changed"
         : "first_observation"
 
+    const predecessorSnapshotId = previousSnapshotId === snapshotId
+      ? existing?.previousSnapshotId || null
+      : previousSnapshotId
+
     await writeJsonAtomically(
       snapshotFile,
-      publicSnapshot(check, snapshotId, observedAt, existing, previousSnapshotId)
+      publicSnapshot(check, snapshotId, observedAt, existing, predecessorSnapshotId)
     )
     await writeJsonAtomically(indexFile, {
       schemaVersion: 1,
