@@ -37,6 +37,11 @@ const sourceEvidenceMeta = document.querySelector("#sourceEvidenceMeta")
 const sourceEvidenceChecks = document.querySelector("#sourceEvidenceChecks")
 const sourceEvidenceLink = document.querySelector("#sourceEvidenceLink")
 const closeSourceEvidence = document.querySelector("#closeSourceEvidence")
+const compareSourceEvidence = document.querySelector("#compareSourceEvidence")
+const sourceComparison = document.querySelector("#sourceComparison")
+const sourceComparisonTitle = document.querySelector("#sourceComparisonTitle")
+const sourceComparisonMeta = document.querySelector("#sourceComparisonMeta")
+const sourceComparisonList = document.querySelector("#sourceComparisonList")
 const documentReport = document.querySelector("#documentReport")
 const documentTitle = document.querySelector("#documentTitle")
 const documentSummary = document.querySelector("#documentSummary")
@@ -83,6 +88,7 @@ let tourStep = 0
 let toastTimer
 let selectedFile = null
 let sessionOpen = false
+let selectedSourceSnapshotId = null
 const renewalStorageKey = "civra_renewals_v1"
 const defaultRenewals = [
   { name: "Food Service Permit", dueDate: "2026-09-21" },
@@ -285,14 +291,23 @@ function renderSourceHistory(snapshots) {
   }
 }
 
+function hideSourceComparison() {
+  sourceComparison.hidden = true
+  sourceComparisonList.replaceChildren()
+}
+
 function hideSourceEvidence() {
+  selectedSourceSnapshotId = null
   sourceEvidence.hidden = true
   sourceEvidenceChecks.replaceChildren()
   sourceEvidenceLink.hidden = true
   sourceEvidenceLink.removeAttribute("href")
+  compareSourceEvidence.hidden = true
+  hideSourceComparison()
 }
 
 function renderSourceEvidence(snapshot) {
+  selectedSourceSnapshotId = snapshot.snapshotId || null
   sourceEvidence.hidden = false
   sourceEvidenceTitle.textContent = snapshot.title || snapshot.source || "Recorded source evidence"
   const observedAt = snapshot.lastObservedAt ? new Date(snapshot.lastObservedAt).toLocaleString() : "an unknown time"
@@ -324,6 +339,9 @@ function renderSourceEvidence(snapshot) {
     sourceEvidenceChecks.append(row)
   }
 
+  compareSourceEvidence.hidden = !snapshot.previousSnapshotId
+  hideSourceComparison()
+
   const sourceUrl = snapshot.finalUrl || snapshot.source
   if (sourceUrl) {
     sourceEvidenceLink.href = sourceUrl
@@ -348,6 +366,62 @@ async function loadSourceEvidence(snapshotId) {
   } catch (error) {
     sourceEvidenceTitle.textContent = "Recorded source evidence unavailable"
     sourceEvidenceMeta.textContent = error instanceof Error ? error.message : "Civra could not load this source evidence."
+  }
+}
+
+function renderSourceComparison(comparison) {
+  sourceComparison.hidden = false
+  const previous = comparison.previous
+  const current = comparison.current
+  if (!previous) {
+    sourceComparisonTitle.textContent = "No prior snapshot is available"
+    sourceComparisonMeta.textContent = "Civra cannot compare this snapshot because it has no recorded predecessor."
+    sourceComparisonList.replaceChildren()
+    return
+  }
+
+  sourceComparisonTitle.textContent = "Changes from the prior recorded snapshot"
+  const changes = Array.isArray(comparison.changes) ? comparison.changes : []
+  const unchanged = Number.isInteger(comparison.unchangedCount) ? comparison.unchangedCount : 0
+  sourceComparisonMeta.textContent = `${changes.length} requirement change${changes.length === 1 ? "" : "s"} and ${unchanged} unchanged. This is a comparison of recorded official-page evidence, not an approval decision.`
+  sourceComparisonList.replaceChildren()
+  if (changes.length === 0) {
+    const none = document.createElement("p")
+    none.textContent = "No requirement-level changes were recorded."
+    sourceComparisonList.append(none)
+    return
+  }
+
+  for (const change of changes) {
+    const row = document.createElement("article")
+    row.className = "sourcecomparisonrow " + (change.kind || "changed")
+    const heading = document.createElement("strong")
+    heading.textContent = change.label || change.key || "Requirement"
+    const kind = document.createElement("span")
+    kind.textContent = String(change.kind || "changed").toUpperCase()
+    const before = document.createElement("p")
+    before.textContent = "Before: " + (change.before?.status || "not recorded") + (change.before?.evidence ? " — " + change.before.evidence : "")
+    const after = document.createElement("p")
+    after.textContent = "Now: " + (change.after?.status || "not recorded") + (change.after?.evidence ? " — " + change.after.evidence : "")
+    row.append(heading, kind, before, after)
+    sourceComparisonList.append(row)
+  }
+}
+
+async function loadSourceComparison() {
+  if (!selectedSourceSnapshotId) return
+  sourceComparison.hidden = false
+  sourceComparisonTitle.textContent = "Comparing recorded snapshots"
+  sourceComparisonMeta.textContent = "Civra is comparing the recorded official-page evidence."
+  sourceComparisonList.replaceChildren()
+  try {
+    const response = await fetch("/api/source-history/" + encodeURIComponent(selectedSourceSnapshotId) + "/compare")
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || "Civra could not compare these source snapshots.")
+    renderSourceComparison(result.comparison || {})
+  } catch (error) {
+    sourceComparisonTitle.textContent = "Source comparison unavailable"
+    sourceComparisonMeta.textContent = error instanceof Error ? error.message : "Civra could not compare these source snapshots."
   }
 }
 
@@ -426,6 +500,7 @@ sourceHistoryList.addEventListener("click", event => {
   if (button && button.dataset.snapshotId) loadSourceEvidence(button.dataset.snapshotId)
 })
 closeSourceEvidence.addEventListener("click", hideSourceEvidence)
+compareSourceEvidence.addEventListener("click", loadSourceComparison)
 downloadRenewals.addEventListener("click", downloadRenewalCalendar)
 clearRenewals.addEventListener("click", () => {
   trackedRenewals = defaultRenewals.map(renewal => ({ ...renewal }))
