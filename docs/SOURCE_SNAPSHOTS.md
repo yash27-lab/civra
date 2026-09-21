@@ -18,4 +18,8 @@ An unlocked Civra session can retrieve recent snapshots from `GET /api/source-hi
 
 By default, local snapshots are written under `data/source-snapshots/`, which is ignored by Git. Set `CIVRA_SOURCE_SNAPSHOT_DIR` to a mounted persistent directory in production so snapshot history survives process restarts and deployments.
 
+## Comparing changes
+
+When a newly recorded fingerprint differs from the last one, Civra retains that prior fingerprint as the comparison baseline. An unlocked owner can use `GET /api/source-history/:snapshotId/compare` to see only requirement-level changes: added, removed, or changed statuses, notes, and official-page excerpts. It never launches a browser, sends an alert, or treats a difference as a decision; the owner still reviews the official source.
+
 The on-disk store is single-instance safe. A multi-instance deployment needs shared durable storage and coordination before it can provide globally ordered snapshot history.
