@@ -30,9 +30,9 @@ async function writeJsonAtomically(file, value) {
   await fs.rename(temporary, file)
 }
 
-function publicSnapshot(check, snapshotId, observedAt, existing) {
+function publicSnapshot(check, snapshotId, observedAt, existing, previousSnapshotId) {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     snapshotId,
     source: check.source || null,
     finalUrl: check.finalUrl || null,
@@ -43,8 +43,53 @@ function publicSnapshot(check, snapshotId, observedAt, existing) {
     checks: check.checks || {},
     firstObservedAt: existing ? existing.firstObservedAt : observedAt,
     lastObservedAt: observedAt,
-    observationCount: (existing?.observationCount || 0) + 1
+    observationCount: (existing?.observationCount || 0) + 1,
+    previousSnapshotId: previousSnapshotId || null
   }
+}
+
+function comparableCheck(check) {
+  if (!check) return null
+  return {
+    label: check.label || null,
+    status: check.status || "unknown",
+    reason: check.reason || null,
+    evidence: check.evidence || null
+  }
+}
+
+function checksEqual(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right)
+}
+
+function compareSnapshots(current, previous) {
+  if (!current || !previous) {
+    return { changes: [], unchangedCount: 0 }
+  }
+
+  const currentChecks = current.checks || {}
+  const previousChecks = previous.checks || {}
+  const keys = [...new Set([...Object.keys(previousChecks), ...Object.keys(currentChecks)])].sort()
+  const changes = []
+  let unchangedCount = 0
+
+  for (const key of keys) {
+    const before = comparableCheck(previousChecks[key])
+    const after = comparableCheck(currentChecks[key])
+    if (checksEqual(before, after)) {
+      unchangedCount += 1
+      continue
+    }
+    changes.push({
+      key,
+      label: after?.label || before?.label || key,
+      kind: before && after ? "changed" : before ? "removed" : "added",
+      before,
+      after
+    })
+  }
+
+  return { changes, unchangedCount }
 }
 
 function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
@@ -70,7 +115,7 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
 
     await writeJsonAtomically(
       snapshotFile,
-      publicSnapshot(check, snapshotId, observedAt, existing)
+      publicSnapshot(check, snapshotId, observedAt, existing, previousSnapshotId)
     )
     await writeJsonAtomically(indexFile, {
       schemaVersion: 1,
@@ -99,7 +144,8 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
       checks: snapshot.checks,
       firstObservedAt: snapshot.firstObservedAt,
       lastObservedAt: snapshot.lastObservedAt,
-      observationCount: snapshot.observationCount
+      observationCount: snapshot.observationCount,
+      previousSnapshotId: snapshot.previousSnapshotId || null
     }
   }
 
@@ -107,6 +153,16 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
     const validSnapshotId = snapshotIdFor(snapshotId)
     const snapshot = await readJson(path.join(directory, `${validSnapshotId}.json`))
     return publicEvidence(snapshot)
+  }
+
+  async function compare(snapshotId) {
+    const current = await get(snapshotId)
+    if (!current || !current.previousSnapshotId) {
+      return { current, previous: null, changes: [], unchangedCount: 0 }
+    }
+    const previous = await get(current.previousSnapshotId)
+    const comparison = compareSnapshots(current, previous)
+    return { current, previous, ...comparison }
   }
 
   async function list({ limit = 10 } = {}) {
@@ -139,12 +195,13 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
           reasons: evidence.reasons,
           firstObservedAt: evidence.firstObservedAt,
           lastObservedAt: evidence.lastObservedAt,
-          observationCount: evidence.observationCount
+          observationCount: evidence.observationCount,
+          previousSnapshotId: evidence.previousSnapshotId
         }
       })
   }
 
-  return { directory, record, get, list }
+  return { directory, record, get, compare, list }
 }
 
-module.exports = { createSourceSnapshotStore, snapshotIdFor }
+module.exports = { createSourceSnapshotStore, snapshotIdFor, compareSnapshots }
