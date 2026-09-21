@@ -86,7 +86,7 @@ test("source snapshots retain the current fingerprint and change history", async
 
     const evidence = await store.get(first.snapshotId)
     assert.equal(evidence.sourceFingerprint, first.snapshotId)
-    assert.equal(evidence.checks.salesTax, undefined)
+    assert.equal(evidence.checks.salesTax.status, "found")
     assert.equal(evidence.observationCount, 2)
     assert.equal(await store.get("b".repeat(64)), null)
 
