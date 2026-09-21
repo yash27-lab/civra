@@ -4,7 +4,7 @@
   <meta charset="utf8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Civra</title>
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
   <aside class="side">
@@ -62,6 +62,13 @@
         <div class="cardtop"><div><p class="eyebrow">SNAPSHOT EVIDENCE</p><h3 id="sourceEvidenceTitle">Recorded source evidence</h3></div><button id="closeSourceEvidence" type="button">Close evidence</button></div>
         <p class="sourceevidencemeta" id="sourceEvidenceMeta"></p>
         <div class="sourceevidencechecks" id="sourceEvidenceChecks"></div>
+        <button class="compareevidence" id="compareSourceEvidence" type="button" hidden>Compare with prior snapshot</button>
+        <section class="sourcecomparison" id="sourceComparison" hidden>
+          <p class="eyebrow">WHAT CHANGED</p>
+          <h4 id="sourceComparisonTitle">Source comparison</h4>
+          <p class="sourcecomparisonmeta" id="sourceComparisonMeta"></p>
+          <div class="sourcecomparisonlist" id="sourceComparisonList"></div>
+        </section>
         <a class="sourceevidencelink" id="sourceEvidenceLink" target="_blank" rel="noreferrer" hidden>Open official source</a>
         <p class="sourceevidencenote">These excerpts are recorded evidence from the official page, not approval to submit or a substitute for owner review.</p>
       </section>
@@ -201,6 +208,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
