@@ -314,6 +314,26 @@ function createServer({
     }
   }
 
+  async function handleSourceComparison(response, snapshotId) {
+    try {
+      const comparison = await snapshotStore.compare(snapshotId)
+      if (!comparison.current) {
+        sendJson(response, 404, {
+          code: "SOURCE_SNAPSHOT_NOT_FOUND",
+          message: "That recorded source snapshot is not available."
+        })
+        return
+      }
+      sendJson(response, 200, { comparison })
+    } catch (error) {
+      console.error("Source comparison unavailable", error instanceof Error ? error.message : error)
+      sendJson(response, 503, {
+        code: "SOURCE_COMPARISON_UNAVAILABLE",
+        message: "Civra could not compare the recorded source snapshots."
+      })
+    }
+  }
+
   async function handleSourceSnapshot(response, snapshotId) {
     try {
       const snapshot = await snapshotStore.get(snapshotId)
@@ -465,6 +485,21 @@ function createServer({
         return true
       }
       await handleSourceHistory(response)
+      return true
+    }
+
+    const sourceComparisonMatch = pathname.match(/^\/api\/source-history\/([a-f0-9]{64})\/compare$/)
+    if (sourceComparisonMatch && request.method === "GET") {
+      const token = getSession(request)
+      const session = token ? sessions.get(token) : null
+      if (!session) {
+        sendJson(response, 401, {
+          code: "AUTH_REQUIRED",
+          message: "Unlock Civra before comparing recorded source evidence."
+        })
+        return true
+      }
+      await handleSourceComparison(response, sourceComparisonMatch[1])
       return true
     }
 
