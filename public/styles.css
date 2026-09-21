@@ -202,3 +202,17 @@ input[type=file] { position:absolute; left:-9999px; }
 .sourceevidencecheck blockquote { margin:8px 0 0; padding-left:10px; border-left:2px solid #d6e2dc; color:#3e4b43; font-size:11px; line-height:1.45; }
 .sourceevidencelink { display:inline-block; margin-top:14px; color:var(--green); font-size:11px; font-weight:bold; }
 .sourceevidencenote { margin-top:14px; }
+
+.compareevidence { display:inline-block; margin-top:14px; padding:9px 11px; border:1px solid #b9cbc3; border-radius:6px; background:white; color:var(--green); font-size:11px; font-weight:bold; cursor:pointer; }
+.compareevidence:hover,.compareevidence:focus-visible { background:var(--mint); }
+.sourcecomparison { margin-top:16px; padding:15px; border:1px solid #d2ddd7; border-radius:8px; background:#fff; }
+.sourcecomparison[hidden] { display:none; }
+.sourcecomparison h4 { margin:4px 0 6px; font-size:14px; }
+.sourcecomparisonmeta { margin:0; color:#627068; font-size:11px; line-height:1.45; }
+.sourcecomparisonlist { display:grid; gap:8px; margin-top:12px; }
+.sourcecomparisonrow { position:relative; padding:11px 11px 10px 13px; border-left:3px solid #9b6a3d; border-radius:4px; background:#fbfaf7; }
+.sourcecomparisonrow.added { border-left-color:var(--green); background:#f8fbf9; }
+.sourcecomparisonrow.removed { border-left-color:#9b6a3d; }
+.sourcecomparisonrow strong { display:block; padding-right:76px; font-size:12px; }
+.sourcecomparisonrow > span { position:absolute; top:11px; right:11px; color:#6b746e; font-size:9px; font-weight:bold; letter-spacing:.7px; }
+.sourcecomparisonrow p { margin:6px 0 0; color:#5e6b63; font-size:11px; line-height:1.45; overflow-wrap:anywhere; }
