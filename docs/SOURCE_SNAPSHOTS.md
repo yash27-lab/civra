@@ -16,7 +16,7 @@ An unlocked Civra session can retrieve recent snapshots from `GET /api/source-hi
 
 ## Freshness gate
 
-Document evidence is allowed to reach the sandbox only when Civra has a verified official-source snapshot observed within the last seven days. If the source is missing, did not pass the trust gates, or is older than that window, document verification returns `409 SOURCE_REVIEW_REQUIRED` before the upload is read or a sandbox is launched. The owner must run a fresh city check and review any changed evidence first.
+Document evidence is allowed to reach the sandbox only when Civra has a verified official-source snapshot observed within the configured freshness window (seven days by default). Set `CIVRA_SOURCE_MAX_AGE_DAYS` from 1 through 365 only when an owner-reviewed operating policy supports a different window. If the source is missing, did not pass the trust gates, or is older than that window, document verification returns `409 SOURCE_REVIEW_REQUIRED` before the upload is read or a sandbox is launched. The owner must run a fresh city check and review any changed evidence first.
 
 ## Deployment
 
