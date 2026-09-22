@@ -89,6 +89,7 @@ test("source snapshots retain the current fingerprint and change history", async
     assert.equal(evidence.checks.salesTax.status, "found")
     assert.equal(evidence.observationCount, 2)
     assert.equal(await store.get("b".repeat(64)), null)
+    assert.equal((await store.latest()).snapshotId, changed.snapshotId)
 
     const stored = JSON.parse(await fs.readFile(path.join(directory, `${first.snapshotId}.json`), "utf8"))
     assert.equal(Object.hasOwn(stored, "text"), false)
@@ -184,6 +185,11 @@ async function withServer(run, options = {}) {
         observedAt: result.checkedAt || "2026-09-01T00:00:00.000Z"
       }),
       get: async () => null,
+      latest: async () => ({
+        snapshotId: "f".repeat(64),
+        pageVerified: true,
+        lastObservedAt: new Date().toISOString()
+      }),
       compare: async () => ({ current: null, previous: null, changes: [], unchangedCount: 0 }),
       list: async () => []
     },
@@ -276,7 +282,8 @@ test("the health check reports non-secret capability readiness", async () => {
         capabilities: {
           livePermitChecks: true,
           documentVerification: true,
-          sourceSnapshotStorage: "local"
+          sourceSnapshotStorage: "local",
+          documentChecksRequireFreshVerifiedSource: true
         }
       })
     }, { accessCode: "test_access" }))
@@ -554,6 +561,62 @@ test("cross-site browser requests cannot trigger paid permit checks", () => with
     assert.equal(allowed.status, 200)
     assert.equal(calls, 1)
   }, { runCheck, accessCode: "test_access" })
+}))
+
+test("document checks require a fresh verified official-source snapshot before a sandbox starts", () => withApiKey(() => {
+  let calls = 0
+  const verifyDocument = async () => {
+    calls += 1
+    return { ok: true }
+  }
+
+  const staleSnapshotStore = {
+    record: async () => ({ snapshotId: "a".repeat(64), change: "first_observation" }),
+    get: async () => null,
+    latest: async () => ({
+      snapshotId: "a".repeat(64),
+      pageVerified: true,
+      lastObservedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString()
+    }),
+    compare: async () => ({ current: null, previous: null, changes: [], unchangedCount: 0 }),
+    list: async () => []
+  }
+
+  return withServer(async base => {
+    const { cookie } = await openTestSession(base)
+    const blocked = await documentCheck(base, cookie, smallPdf())
+    assert.equal(blocked.status, 409)
+    const body = await blocked.json()
+    assert.equal(body.code, "SOURCE_REVIEW_REQUIRED")
+    assert.match(body.message, /live city check/i)
+    assert.equal(calls, 0)
+  }, { verifyDocument, snapshotStore: staleSnapshotStore, accessCode: "test_access" })
+}))
+
+test("a fresh verified source allows document review to reach the sandbox", () => withApiKey(() => {
+  let calls = 0
+  const verifyDocument = async () => {
+    calls += 1
+    return { ok: true }
+  }
+  const freshSnapshotStore = {
+    record: async () => ({ snapshotId: "a".repeat(64), change: "first_observation" }),
+    get: async () => null,
+    latest: async () => ({
+      snapshotId: "a".repeat(64),
+      pageVerified: true,
+      lastObservedAt: new Date().toISOString()
+    }),
+    compare: async () => ({ current: null, previous: null, changes: [], unchangedCount: 0 }),
+    list: async () => []
+  }
+
+  return withServer(async base => {
+    const { cookie } = await openTestSession(base)
+    const response = await documentCheck(base, cookie, smallPdf())
+    assert.equal(response.status, 200)
+    assert.equal(calls, 1)
+  }, { verifyDocument, snapshotStore: freshSnapshotStore, accessCode: "test_access" })
 }))
 
 test("document checks require the same private session and explicit action", () => withApiKey(() => {
