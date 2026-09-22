@@ -22,4 +22,6 @@ By default, local snapshots are written under `data/source-snapshots/`, which is
 
 When a newly recorded fingerprint differs from the last one, Civra retains that prior fingerprint as the comparison baseline. An unlocked owner can use `GET /api/source-history/:snapshotId/compare` to see only requirement-level changes: added, removed, or changed statuses, notes, and official-page excerpts. It never launches a browser, sends an alert, or treats a difference as a decision; the owner still reviews the official source.
 
+The owner can also download a local JSON review packet after opening a snapshot. It includes the recorded source evidence and any comparison, carries an explicit owner-review-only warning, and does not include uploads, cookies, access codes, or API keys. The packet is created in the browser and is never sent to Civra.
+
 The on-disk store is single-instance safe. A multi-instance deployment needs shared durable storage and coordination before it can provide globally ordered snapshot history.
