@@ -38,6 +38,7 @@ const sourceEvidenceChecks = document.querySelector("#sourceEvidenceChecks")
 const sourceEvidenceLink = document.querySelector("#sourceEvidenceLink")
 const closeSourceEvidence = document.querySelector("#closeSourceEvidence")
 const compareSourceEvidence = document.querySelector("#compareSourceEvidence")
+const downloadSourceReview = document.querySelector("#downloadSourceReview")
 const sourceComparison = document.querySelector("#sourceComparison")
 const sourceComparisonTitle = document.querySelector("#sourceComparisonTitle")
 const sourceComparisonMeta = document.querySelector("#sourceComparisonMeta")
@@ -89,6 +90,8 @@ let toastTimer
 let selectedFile = null
 let sessionOpen = false
 let selectedSourceSnapshotId = null
+let selectedSourceSnapshot = null
+let selectedSourceComparison = null
 const renewalStorageKey = "civra_renewals_v1"
 const defaultRenewals = [
   { name: "Food Service Permit", dueDate: "2026-09-21" },
@@ -298,16 +301,20 @@ function hideSourceComparison() {
 
 function hideSourceEvidence() {
   selectedSourceSnapshotId = null
+  selectedSourceSnapshot = null
+  selectedSourceComparison = null
   sourceEvidence.hidden = true
   sourceEvidenceChecks.replaceChildren()
   sourceEvidenceLink.hidden = true
   sourceEvidenceLink.removeAttribute("href")
   compareSourceEvidence.hidden = true
+  downloadSourceReview.hidden = true
   hideSourceComparison()
 }
 
 function renderSourceEvidence(snapshot) {
   selectedSourceSnapshotId = snapshot.snapshotId || null
+  selectedSourceSnapshot = snapshot
   sourceEvidence.hidden = false
   sourceEvidenceTitle.textContent = snapshot.title || snapshot.source || "Recorded source evidence"
   const observedAt = snapshot.lastObservedAt ? new Date(snapshot.lastObservedAt).toLocaleString() : "an unknown time"
@@ -340,6 +347,7 @@ function renderSourceEvidence(snapshot) {
   }
 
   compareSourceEvidence.hidden = !snapshot.previousSnapshotId
+  downloadSourceReview.hidden = false
   hideSourceComparison()
 
   const sourceUrl = snapshot.finalUrl || snapshot.source
@@ -370,6 +378,7 @@ async function loadSourceEvidence(snapshotId) {
 }
 
 function renderSourceComparison(comparison) {
+  selectedSourceComparison = comparison
   sourceComparison.hidden = false
   const previous = comparison.previous
   const current = comparison.current
@@ -405,6 +414,37 @@ function renderSourceComparison(comparison) {
     after.textContent = "Now: " + (change.after?.status || "not recorded") + (change.after?.evidence ? " — " + change.after.evidence : "")
     row.append(heading, kind, before, after)
     sourceComparisonList.append(row)
+  }
+}
+
+function buildSourceReviewPacket(snapshot, comparison, exportedAt = new Date().toISOString()) {
+  return {
+    schemaVersion: 1,
+    exportedAt,
+    purpose: "Owner review only",
+    warning: "This packet records source evidence and differences. It is not a permit, approval, filing, payment, or notification.",
+    sourceSnapshot: snapshot || null,
+    sourceComparison: comparison || null
+  }
+}
+
+function downloadSourceReviewPacket() {
+  if (!selectedSourceSnapshot) return
+  try {
+    const packet = buildSourceReviewPacket(selectedSourceSnapshot, selectedSourceComparison)
+    const blob = new Blob([JSON.stringify(packet, null, 2) + "\n"], { type: "application/json;charset=utf-8" })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = "civra-source-review-" + String(selectedSourceSnapshot.snapshotId || "packet").slice(0, 12) + ".json"
+    link.hidden = true
+    document.body.append(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    showToast("Source review packet downloaded locally.")
+  } catch {
+    showToast("Civra could not create the local review packet in this browser.")
   }
 }
 
@@ -501,6 +541,7 @@ sourceHistoryList.addEventListener("click", event => {
 })
 closeSourceEvidence.addEventListener("click", hideSourceEvidence)
 compareSourceEvidence.addEventListener("click", loadSourceComparison)
+downloadSourceReview.addEventListener("click", downloadSourceReviewPacket)
 downloadRenewals.addEventListener("click", downloadRenewalCalendar)
 clearRenewals.addEventListener("click", () => {
   trackedRenewals = defaultRenewals.map(renewal => ({ ...renewal }))
