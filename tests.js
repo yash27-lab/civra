@@ -291,7 +291,8 @@ test("the health check reports non-secret capability readiness", async () => {
           livePermitChecks: true,
           documentVerification: true,
           sourceSnapshotStorage: "local",
-          documentChecksRequireFreshVerifiedSource: true
+          documentChecksRequireFreshVerifiedSource: true,
+          documentSourceMaxAgeDays: 7
         }
       })
     }, { accessCode: "test_access" }))
