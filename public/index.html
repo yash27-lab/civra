@@ -4,7 +4,7 @@
   <meta charset="utf8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Civra</title>
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
   <aside class="side">
@@ -62,7 +62,10 @@
         <div class="cardtop"><div><p class="eyebrow">SNAPSHOT EVIDENCE</p><h3 id="sourceEvidenceTitle">Recorded source evidence</h3></div><button id="closeSourceEvidence" type="button">Close evidence</button></div>
         <p class="sourceevidencemeta" id="sourceEvidenceMeta"></p>
         <div class="sourceevidencechecks" id="sourceEvidenceChecks"></div>
-        <button class="compareevidence" id="compareSourceEvidence" type="button" hidden>Compare with prior snapshot</button>
+        <div class="sourceevidenceactions">
+          <button class="compareevidence" id="compareSourceEvidence" type="button" hidden>Compare with prior snapshot</button>
+          <button class="downloadreview" id="downloadSourceReview" type="button" hidden>Download review packet</button>
+        </div>
         <section class="sourcecomparison" id="sourceComparison" hidden>
           <p class="eyebrow">WHAT CHANGED</p>
           <h4 id="sourceComparisonTitle">Source comparison</h4>
@@ -208,6 +211,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
