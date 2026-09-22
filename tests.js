@@ -4,7 +4,7 @@ const os = require("node:os")
 const path = require("node:path")
 const test = require("node:test")
 const { setTimeout: wait } = require("node:timers/promises")
-const { createServer } = require("./server")
+const { createServer, sourceFreshnessMs } = require("./server")
 const { PERMIT_URL, evaluatePermitPage, sourceFingerprint } = require("./solari-service")
 const { identifySignature, makeChecklist } = require("./document-verification-service")
 const { createSourceSnapshotStore } = require("./source-snapshot-store")
@@ -22,6 +22,14 @@ const goodPage = {
     Give a valid email address for city notices.
   `
 }
+
+test("source freshness uses a safe configured day window", () => {
+  assert.equal(sourceFreshnessMs(undefined), 7 * 24 * 60 * 60 * 1000)
+  assert.equal(sourceFreshnessMs("3"), 3 * 24 * 60 * 60 * 1000)
+  assert.equal(sourceFreshnessMs("0"), 7 * 24 * 60 * 60 * 1000)
+  assert.equal(sourceFreshnessMs("invalid"), 7 * 24 * 60 * 60 * 1000)
+  assert.equal(sourceFreshnessMs("366"), 7 * 24 * 60 * 60 * 1000)
+})
 
 test("source fingerprints ignore whitespace but detect source changes", () => {
   const whitespaceOnly = { ...goodPage, text: goodPage.text.replace(/\s+/g, " ") }
