@@ -684,4 +684,4 @@ if (require.main === module) {
   })
 }
 
-module.exports = { createServer, safetyHeaders }
+module.exports = { createServer, safetyHeaders, sourceFreshnessMs }
