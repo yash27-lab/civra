@@ -159,6 +159,12 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
     return publicEvidence(snapshot)
   }
 
+  async function latest() {
+    const index = await readJson(indexFile)
+    if (!index || !index.latestSnapshotId) return null
+    return get(index.latestSnapshotId)
+  }
+
   async function compare(snapshotId) {
     const current = await get(snapshotId)
     if (!current || !current.previousSnapshotId) {
@@ -205,7 +211,7 @@ function createSourceSnapshotStore({ directory = defaultDirectory } = {}) {
       })
   }
 
-  return { directory, record, get, compare, list }
+  return { directory, record, get, latest, compare, list }
 }
 
 module.exports = { createSourceSnapshotStore, snapshotIdFor, compareSnapshots }
