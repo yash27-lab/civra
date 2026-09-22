@@ -21,6 +21,14 @@ const defaultDocumentChecksPerSession = 3
 const defaultDocumentChecksInFlight = 1
 const defaultPermitChecksPerSession = 3
 const defaultSourceFreshnessMs = 7 * 24 * 60 * 60 * 1000
+const millisecondsPerDay = 24 * 60 * 60 * 1000
+
+function sourceFreshnessMs(value = process.env.CIVRA_SOURCE_MAX_AGE_DAYS) {
+  if (value === undefined || value === "") return defaultSourceFreshnessMs
+  const days = Number(value)
+  if (!Number.isFinite(days) || days <= 0 || days > 365) return defaultSourceFreshnessMs
+  return Math.round(days * millisecondsPerDay)
+}
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -136,7 +144,7 @@ function createServer({
   maxPermitChecksPerSession = defaultPermitChecksPerSession,
   maxDocumentChecksPerSession = defaultDocumentChecksPerSession,
   maxDocumentChecksInFlight = defaultDocumentChecksInFlight,
-  maxSourceAgeMs = defaultSourceFreshnessMs
+  maxSourceAgeMs = sourceFreshnessMs()
 } = {}) {
   let cached = null
   let inFlight = null
@@ -233,7 +241,8 @@ function createServer({
         livePermitChecks: liveChecksConfigured,
         documentVerification: liveChecksConfigured,
         sourceSnapshotStorage: process.env.CIVRA_SOURCE_SNAPSHOT_DIR ? "persistent" : "local",
-        documentChecksRequireFreshVerifiedSource: true
+        documentChecksRequireFreshVerifiedSource: true,
+        documentSourceMaxAgeDays: Math.round(maxSourceAgeMs / millisecondsPerDay)
       }
     }
   }
