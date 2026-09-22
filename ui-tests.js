@@ -115,6 +115,25 @@ test("renewal calendar export creates owner-review events", async () => {
   dom.window.close()
 })
 
+test("source review packets preserve evidence and comparison boundaries", async () => {
+  const dom = loadPage()
+  await nextTurn()
+  const packet = dom.window.buildSourceReviewPacket({
+    snapshotId: "a".repeat(64),
+    source: "https://example.com/official",
+    checks: { insurance: { status: "missing", evidence: null } }
+  }, {
+    changes: [{ key: "insurance", kind: "changed" }]
+  }, "2026-09-22T12:00:00.000Z")
+
+  assert.equal(packet.schemaVersion, 1)
+  assert.equal(packet.exportedAt, "2026-09-22T12:00:00.000Z")
+  assert.match(packet.warning, /not a permit/i)
+  assert.equal(packet.sourceSnapshot.checks.insurance.status, "missing")
+  assert.equal(packet.sourceComparison.changes[0].key, "insurance")
+  dom.window.close()
+})
+
 test("document selection does not trust browser MIME and requires an unlocked session", async () => {
   const dom = loadPage()
   const { document, Event, File } = dom.window
