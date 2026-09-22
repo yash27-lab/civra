@@ -46,9 +46,10 @@ worse than no answer.
   recorded requirement evidence, compare it with the prior official-page
   snapshot, or download a local review packet without launching another
   browser run.
-- A protected document route accepts a PDF, JPEG, or PNG up to 10 MB, checks
-  its magic bytes before any extraction, and verifies those bytes a second time
-  in an ephemeral Solari sandbox.
+- A protected document route accepts a PDF, JPEG, or PNG up to 10 MB only
+  after Civra has a fresh, verified official-source snapshot. It checks magic
+  bytes before any extraction and verifies those bytes a second time in an
+  ephemeral Solari sandbox.
 - The sandbox extracts PDF text with its local Poppler reader when available,
   with a conservative bounded Flate/literal fallback, plus basic PDF/image
   metadata. It matches that evidence against a versioned permit requirement
