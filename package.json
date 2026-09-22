@@ -7,6 +7,7 @@
     "start": "node server.js",
     "test": "node --test tests.js ui-tests.js",
     "test:server": "node --test tests.js",
+    "test:source": "node --test --test-name-pattern=\"source\" tests.js ui-tests.js",
     "test:ui": "node --test ui-tests.js",
     "ci": "npm run check"
   },
