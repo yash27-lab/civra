@@ -14,6 +14,10 @@ If Civra cannot write the source snapshot, the live check fails closed and retur
 
 An unlocked Civra session can retrieve recent snapshots from `GET /api/source-history`. Selecting a specific snapshot uses `GET /api/source-history/:snapshotId` to return its recorded requirement statuses, review notes, and official-page excerpts. Both endpoints are read-only, require the private Civra session, never return owner uploads or secrets, and do not launch a browser or spend a Solari API call. The owner dashboard shows the recorded title, observation time, truncated snapshot ID, trust-gate outcome, and an evidence view for the selected snapshot.
 
+## Freshness gate
+
+Document evidence is allowed to reach the sandbox only when Civra has a verified official-source snapshot observed within the last seven days. If the source is missing, did not pass the trust gates, or is older than that window, document verification returns `409 SOURCE_REVIEW_REQUIRED` before the upload is read or a sandbox is launched. The owner must run a fresh city check and review any changed evidence first.
+
 ## Deployment
 
 By default, local snapshots are written under `data/source-snapshots/`, which is ignored by Git. Set `CIVRA_SOURCE_SNAPSHOT_DIR` to a mounted persistent directory in production so snapshot history survives process restarts and deployments.
