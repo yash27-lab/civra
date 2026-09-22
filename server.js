@@ -20,6 +20,7 @@ const maxLoginFailures = 5
 const defaultDocumentChecksPerSession = 3
 const defaultDocumentChecksInFlight = 1
 const defaultPermitChecksPerSession = 3
+const defaultSourceFreshnessMs = 7 * 24 * 60 * 60 * 1000
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -134,7 +135,8 @@ function createServer({
   sessionMs = defaultSessionMs,
   maxPermitChecksPerSession = defaultPermitChecksPerSession,
   maxDocumentChecksPerSession = defaultDocumentChecksPerSession,
-  maxDocumentChecksInFlight = defaultDocumentChecksInFlight
+  maxDocumentChecksInFlight = defaultDocumentChecksInFlight,
+  maxSourceAgeMs = defaultSourceFreshnessMs
 } = {}) {
   let cached = null
   let inFlight = null
@@ -230,7 +232,8 @@ function createServer({
       capabilities: {
         livePermitChecks: liveChecksConfigured,
         documentVerification: liveChecksConfigured,
-        sourceSnapshotStorage: process.env.CIVRA_SOURCE_SNAPSHOT_DIR ? "persistent" : "local"
+        sourceSnapshotStorage: process.env.CIVRA_SOURCE_SNAPSHOT_DIR ? "persistent" : "local",
+        documentChecksRequireFreshVerifiedSource: true
       }
     }
   }
@@ -367,11 +370,61 @@ function createServer({
     }
   }
 
+  async function freshSourceReview() {
+    const snapshot = await snapshotStore.latest()
+    if (!snapshot || !snapshot.pageVerified) {
+      return {
+        ready: false,
+        code: "SOURCE_REVIEW_REQUIRED",
+        message: "Run a live city check before verifying a document. Civra needs a verified official-source snapshot first."
+      }
+    }
+
+    const observedAt = Date.parse(snapshot.lastObservedAt)
+    if (!Number.isFinite(observedAt) || Date.now() - observedAt > maxSourceAgeMs) {
+      return {
+        ready: false,
+        code: "SOURCE_REVIEW_REQUIRED",
+        message: "Run a live city check before verifying a document. The recorded official-source snapshot is too old for document evidence review.",
+        snapshotId: snapshot.snapshotId,
+        lastObservedAt: snapshot.lastObservedAt
+      }
+    }
+
+    return {
+      ready: true,
+      snapshotId: snapshot.snapshotId,
+      lastObservedAt: snapshot.lastObservedAt
+    }
+  }
+
   async function handleDocumentCheck(request, response) {
     if (!process.env.SOLARI_API_KEY) {
       sendJson(response, 503, {
         code: "SOLARI_KEY_MISSING",
         message: "Add SOLARI_API_KEY on the server before using document verification."
+      })
+      return
+    }
+
+    let sourceReview
+    try {
+      sourceReview = await freshSourceReview()
+    } catch (error) {
+      console.error("Source review unavailable", error instanceof Error ? error.message : error)
+      sendJson(response, 503, {
+        code: "SOURCE_REVIEW_UNAVAILABLE",
+        message: "Civra could not load the verified official-source snapshot required for document review."
+      })
+      return
+    }
+
+    if (!sourceReview.ready) {
+      sendJson(response, 409, {
+        code: sourceReview.code,
+        message: sourceReview.message,
+        sourceSnapshotId: sourceReview.snapshotId || null,
+        lastObservedAt: sourceReview.lastObservedAt || null
       })
       return
     }
