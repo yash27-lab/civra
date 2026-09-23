@@ -41,3 +41,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Preserve login cooldown behavior when changing session handling.
 - [ ] Keep upload size limits aligned with the sandbox capacity.
 - [ ] Keep file magic-byte checks before any document extraction.
+- [ ] Confirm temporary document workspaces are destroyed after processing.
