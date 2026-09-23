@@ -9,6 +9,12 @@ Check `GET /api/health` after deployment. The response exposes non-secret capabi
 - `sourceSnapshotStorage` reports whether snapshots use the local default or a configured persistent directory.
 - `documentSourceMaxAgeDays` reports the maximum age of a verified city snapshot allowed before document review is blocked.
 
+A ready response should include a capability object like:
+
+```json
+{"livePermitChecks":true,"documentVerification":true,"sourceSnapshotStorage":"persistent","documentChecksRequireFreshVerifiedSource":true,"documentSourceMaxAgeDays":7}
+```
+
 ## Required production configuration
 
 - `SOLARI_API_KEY`
