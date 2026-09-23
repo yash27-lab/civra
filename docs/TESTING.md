@@ -32,3 +32,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Use an owner-approved source freshness window; do not extend it for convenience.
 - [ ] Check remaining session budgets before launching paid work.
 - [ ] Confirm a fresh source snapshot exists before document review.
+- [ ] Review changed source evidence before relying on a new result.
