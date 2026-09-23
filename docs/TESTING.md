@@ -35,3 +35,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Review changed source evidence before relying on a new result.
 - [ ] Open the source comparison when a fingerprint changes.
 - [ ] Keep downloaded review packets in an owner-controlled location.
+- [ ] Treat `SOURCE_REVIEW_REQUIRED` as a stop, not a warning to bypass.
