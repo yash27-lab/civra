@@ -12,7 +12,8 @@ Run one layer while iterating:
 
 ```bash
 npm run test:server
+npm run test:source
 npm run test:ui
 ```
 
-Use synthetic fixtures only. Never place owner documents, access codes, or production credentials in the repository or test output.
+Use `npm run test:source` when changing snapshot history, freshness gates, or evidence comparison. Use synthetic fixtures only. Never place owner documents, access codes, or production credentials in the repository or test output.
