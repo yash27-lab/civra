@@ -30,3 +30,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Use persistent source-snapshot storage in production deployments.
 - [ ] Keep `CIVRA_SOURCE_MAX_AGE_DAYS` within the documented 1–365 range.
 - [ ] Use an owner-approved source freshness window; do not extend it for convenience.
+- [ ] Check remaining session budgets before launching paid work.
