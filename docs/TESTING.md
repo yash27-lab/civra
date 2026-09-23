@@ -46,3 +46,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Keep renewal calendar exports local and owner-triggered.
 - [ ] Check the container health endpoint after deployment.
 - [ ] Keep the production container running as a non-root user.
+- [ ] Review CI and CodeQL results on the final commit, not an intermediate run.
