@@ -23,3 +23,4 @@ Use `npm run test:source` when changing snapshot history, freshness gates, or ev
 Use these checks for small owner-facing changes. They are operational controls, not compliance certification.
 
 - [ ] Run `npm ci` from a clean checkout.
+- [ ] Run `npm run check` before publishing a change.
