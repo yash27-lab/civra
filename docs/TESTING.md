@@ -24,3 +24,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 
 - [ ] Run `npm ci` from a clean checkout.
 - [ ] Run `npm run check` before publishing a change.
+- [ ] Run `npm run test:source` when source evidence or freshness behavior changes.
