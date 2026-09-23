@@ -38,3 +38,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Treat `SOURCE_REVIEW_REQUIRED` as a stop, not a warning to bypass.
 - [ ] Keep state-changing requests protected by the trusted-origin check.
 - [ ] Keep explicit Civra action headers on paid routes.
+- [ ] Preserve login cooldown behavior when changing session handling.
