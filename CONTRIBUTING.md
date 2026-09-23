@@ -7,6 +7,7 @@ Before opening a pull request, run:
 ```bash
 npm ci
 npm run check
+npm run test:source
 ```
 
 Do not use real owner documents or live production credentials in tests. When changing evidence matching, access controls, or sandbox behavior, include a focused test that demonstrates the intended fail-closed outcome.
