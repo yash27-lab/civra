@@ -17,3 +17,9 @@ npm run test:ui
 ```
 
 Use `npm run test:source` when changing snapshot history, freshness gates, or evidence comparison. Use synthetic fixtures only. Never place owner documents, access codes, or production credentials in the repository or test output.
+
+## Maintenance cadence
+
+Use these checks for small owner-facing changes. They are operational controls, not compliance certification.
+
+- [ ] Run `npm ci` from a clean checkout.
