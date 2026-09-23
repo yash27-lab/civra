@@ -39,3 +39,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Keep state-changing requests protected by the trusted-origin check.
 - [ ] Keep explicit Civra action headers on paid routes.
 - [ ] Preserve login cooldown behavior when changing session handling.
+- [ ] Keep upload size limits aligned with the sandbox capacity.
