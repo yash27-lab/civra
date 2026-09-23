@@ -102,7 +102,9 @@ Requirements: Node 20+ and a Solari API key for live checks.
     npm start
 
 Open http://localhost:4173. The paid city and document checks require
-SOLARI_API_KEY and CIVRA_ACCESS_CODE in the server environment.
+SOLARI_API_KEY and CIVRA_ACCESS_CODE in the server environment. Document
+review also uses CIVRA_SOURCE_MAX_AGE_DAYS (7 by default) to prevent stale
+official evidence from reaching the sandbox.
 
 ## Test
 
