@@ -40,3 +40,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Keep explicit Civra action headers on paid routes.
 - [ ] Preserve login cooldown behavior when changing session handling.
 - [ ] Keep upload size limits aligned with the sandbox capacity.
+- [ ] Keep file magic-byte checks before any document extraction.
