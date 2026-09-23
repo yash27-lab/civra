@@ -28,3 +28,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Use only synthetic documents and non-production credentials in tests.
 - [ ] Confirm `/api/health` exposes no secrets or access codes.
 - [ ] Use persistent source-snapshot storage in production deployments.
+- [ ] Keep `CIVRA_SOURCE_MAX_AGE_DAYS` within the documented 1–365 range.
