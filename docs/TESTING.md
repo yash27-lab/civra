@@ -45,3 +45,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Do not add city submission, payment, or portal credential handling without a separate safety review.
 - [ ] Keep renewal calendar exports local and owner-triggered.
 - [ ] Check the container health endpoint after deployment.
+- [ ] Keep the production container running as a non-root user.
