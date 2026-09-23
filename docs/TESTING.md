@@ -34,3 +34,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Confirm a fresh source snapshot exists before document review.
 - [ ] Review changed source evidence before relying on a new result.
 - [ ] Open the source comparison when a fingerprint changes.
+- [ ] Keep downloaded review packets in an owner-controlled location.
