@@ -27,3 +27,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Run `npm run test:source` when source evidence or freshness behavior changes.
 - [ ] Use only synthetic documents and non-production credentials in tests.
 - [ ] Confirm `/api/health` exposes no secrets or access codes.
+- [ ] Use persistent source-snapshot storage in production deployments.
