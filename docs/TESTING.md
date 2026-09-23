@@ -42,3 +42,4 @@ Use these checks for small owner-facing changes. They are operational controls, 
 - [ ] Keep upload size limits aligned with the sandbox capacity.
 - [ ] Keep file magic-byte checks before any document extraction.
 - [ ] Confirm temporary document workspaces are destroyed after processing.
+- [ ] Do not add city submission, payment, or portal credential handling without a separate safety review.
