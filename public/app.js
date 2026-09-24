@@ -944,6 +944,12 @@ signOut.addEventListener("click", async () => {
   }
 })
 
+window.addEventListener("storage", event => {
+  if (event.key !== null && event.key !== renewalStorageKey) return
+  trackedRenewals = loadRenewals()
+  renderRenewals()
+})
+
 renderTodayHeader()
 renderRenewals()
 syncSession()
