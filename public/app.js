@@ -178,16 +178,25 @@ function buildRenewalCalendar(renewals) {
     "METHOD:PUBLISH"
   ]
 
-  renewals
-    .slice()
-    .sort((left, right) => left.dueDate.localeCompare(right.dueDate))
-    .forEach((renewal, index) => {
+  const nameOccurrences = new Map()
+  const calendarEntries = renewals.map(renewal => {
+    const key = renewal.name.trim().toLowerCase()
+    const occurrence = nameOccurrences.get(key) || 0
+    nameOccurrences.set(key, occurrence + 1)
+    return {
+      renewal,
+      uid: "civra-" + encodeURIComponent(key) + "-" + occurrence + "@local"
+    }
+  })
+
+  calendarEntries
+    .sort((left, right) => left.renewal.dueDate.localeCompare(right.renewal.dueDate))
+    .forEach(({ renewal, uid }) => {
       const reviewDate = localDate(renewal.dueDate)
       reviewDate.setDate(reviewDate.getDate() - 30)
       if (reviewDate < now) reviewDate.setTime(now.getTime())
       const endDate = new Date(reviewDate)
       endDate.setDate(endDate.getDate() + 1)
-      const uid = "civra-" + index + "-" + renewal.dueDate.replace(/-/g, "") + "@local"
       lines.push(
         "BEGIN:VEVENT",
         "UID:" + uid,
