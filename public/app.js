@@ -166,6 +166,24 @@ function icsEscape(value) {
     .replace(/\r?\n/g, "\\n")
 }
 
+function foldIcsLine(value) {
+  const encoder = new TextEncoder()
+  let folded = ""
+  let lineBytes = 0
+
+  for (const character of String(value)) {
+    const characterBytes = encoder.encode(character).length
+    if (lineBytes + characterBytes > 75) {
+      folded += "\r\n "
+      lineBytes = 1
+    }
+    folded += character
+    lineBytes += characterBytes
+  }
+
+  return folded
+}
+
 function buildRenewalCalendar(renewals) {
   const now = new Date()
   now.setHours(0, 0, 0, 0)
@@ -210,7 +228,7 @@ function buildRenewalCalendar(renewals) {
     })
 
   lines.push("END:VCALENDAR")
-  return lines.join("\r\n") + "\r\n"
+  return lines.map(foldIcsLine).join("\r\n") + "\r\n"
 }
 
 function downloadRenewalCalendar() {
