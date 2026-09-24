@@ -616,7 +616,7 @@ clearRenewals.addEventListener("click", () => {
     // The visible queue still resets even if this browser blocks local storage.
   }
   renderRenewals()
-  showToast("Saved reminder dates were cleared from this browser.")
+  showToast("Demo renewal dates were restored in this browser.")
 })
 
 document.querySelectorAll(".nav").forEach(button => {
