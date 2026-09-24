@@ -28,6 +28,8 @@ const clearRenewals = document.querySelector("#clearRenewals")
 const historyCard = document.querySelector("#historyCard")
 const proofSummary = document.querySelector("#proofSummary")
 const proofSource = document.querySelector("#proofSource")
+const todayLabel = document.querySelector("#todayLabel")
+const greetingHeading = document.querySelector("#greetingHeading")
 const sourceHistoryCard = document.querySelector("#sourceHistoryCard")
 const sourceHistoryStatus = document.querySelector("#sourceHistoryStatus")
 const sourceHistoryList = document.querySelector("#sourceHistoryList")
@@ -97,6 +99,21 @@ const defaultRenewals = [
   { name: "Food Service Permit", dueDate: "2026-09-21" },
   { name: "Food Handler Card", dueDate: "2027-06-14" }
 ]
+
+function renderTodayHeader() {
+  const now = new Date()
+  todayLabel.textContent = now.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric"
+  }).toUpperCase()
+  const greeting = now.getHours() < 12
+    ? "Good morning"
+    : now.getHours() < 17
+      ? "Good afternoon"
+      : "Good evening"
+  greetingHeading.textContent = greeting + ", Maya."
+}
 
 function localDate(value) {
   const [year, month, day] = String(value).split("-").map(Number)
@@ -867,6 +884,7 @@ signOut.addEventListener("click", async () => {
   }
 })
 
+renderTodayHeader()
 renderRenewals()
 syncSession()
 loadLiveProof()
