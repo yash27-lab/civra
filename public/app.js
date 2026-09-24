@@ -62,13 +62,13 @@ const tourSteps = [
   },
   {
     title: "Open the permit task.",
-    text: "Civra finds the right city page and makes one clear list of what the city asks for.",
-    demo: "<div class='toursource'><strong>City page found</strong><span class='tourtag'>CHECKED</span></div><div class='toursource'><strong>12 facts needed</strong><span class='tourtag'>READY</span></div>"
+    text: "Civra checks its supported NYC city page and records requirement evidence for you to review.",
+    demo: "<div class='toursource'><strong>Official city page</strong><span class='tourtag'>CHECKED</span></div><div class='toursource'><strong>Requirement evidence</strong><span class='tourtag'>REVIEW</span></div>"
   },
   {
-    title: "Check every saved fact.",
-    text: "Each answer shows where it came from. You can fix any answer before Civra uses it.",
-    demo: "<div class='toursource'><div><strong>Maya's Kitchen</strong><small>Business name</small></div><span class='tourtag'>BUSINESS FILE</span></div><div class='toursource'><div><strong>128 Orchard Street</strong><small>Business address</small></div><span class='tourtag'>LEASE</span></div>"
+    title: "Review recorded evidence.",
+    text: "Each result includes its status and any saved official-page excerpt. Unknown means you should review the source yourself.",
+    demo: "<div class='toursource'><div><strong>Requirement result</strong><small>Read its status and evidence excerpt</small></div><span class='tourtag'>REVIEW</span></div><div class='toursource'><div><strong>Source snapshot</strong><small>Check when it was recorded</small></div><span class='tourtag'>HISTORY</span></div>"
   },
   {
     title: "Add only what is missing.",
@@ -82,7 +82,7 @@ const tourSteps = [
   },
   {
     title: "You make the final choice.",
-    text: "Review the full form, payment, and files. Civra waits until you choose to go on.",
+    text: "Confirm open questions with the city, then decide what to do next. Civra does not submit a form or pay a fee.",
     demo: "<strong>Ready for owner review</strong><small>No payment made. No form sent. You stay in charge.</small>"
   }
 ]
