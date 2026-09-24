@@ -58,7 +58,7 @@ const tourSteps = [
   {
     title: "See what needs care.",
     text: "Your home page shows every permit and the next date that needs your care.",
-    demo: "<strong>Food Service Permit</strong><small>21 days left. Civra marks this as the next task.</small>"
+    demo: "<strong>Food Service Permit</strong><small>Review its saved due date and source evidence.</small>"
   },
   {
     title: "Open the permit task.",
@@ -243,7 +243,7 @@ function downloadRenewalCalendar() {
     document.body.append(link)
     link.click()
     link.remove()
-    window.URL.revokeObjectURL(url)
+    window.setTimeout(() => window.URL.revokeObjectURL(url), 1000)
     showToast("Renewal review calendar downloaded. Import it only into a calendar you control.")
   } catch {
     showToast("Civra could not create the renewal calendar file in this browser.")
@@ -492,7 +492,7 @@ function downloadSourceReviewPacket() {
     document.body.append(link)
     link.click()
     link.remove()
-    window.URL.revokeObjectURL(url)
+    window.setTimeout(() => window.URL.revokeObjectURL(url), 1000)
     showToast("Source review packet downloaded locally.")
   } catch {
     showToast("Civra could not create the local review packet in this browser.")
