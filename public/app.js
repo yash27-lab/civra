@@ -163,7 +163,7 @@ function icsEscape(value) {
     .replace(/\\/g, "\\\\")
     .replace(/;/g, "\\;")
     .replace(/,/g, "\\,")
-    .replace(/\r?\n/g, "\\n")
+    .replace(/\r\n|\r|\n/g, "\\n")
 }
 
 function foldIcsLine(value) {
