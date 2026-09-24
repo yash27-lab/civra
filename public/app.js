@@ -728,6 +728,10 @@ addPermitForm.addEventListener("submit", event => {
   const name = document.querySelector("#newPermitName").value.trim()
   const date = document.querySelector("#newPermitDate").value
   if (!name || !date) return
+  if (trackedRenewals.length >= 50) {
+    showToast("Civra can track up to 50 renewal reminders in this browser.")
+    return
+  }
 
   const row = document.createElement("div")
   row.className = "permitrow"
