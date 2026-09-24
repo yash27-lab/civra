@@ -265,7 +265,7 @@ function renewalState(days) {
 
 function renderRenewals() {
   const ordered = trackedRenewals
-    .map(renewal => ({ ...renewal, days: daysUntil(renewal.dueDate) }))
+    .map((renewal, originalIndex) => ({ ...renewal, originalIndex, days: daysUntil(renewal.dueDate) }))
     .sort((left, right) => left.days - right.days)
 
   const needsReview = ordered.filter(renewal => renewal.days <= 30).length
@@ -294,7 +294,14 @@ function renderRenewals() {
     timing.className = "renewaltiming"
     timing.textContent = state.detail
 
-    row.append(details, timing, status)
+    const remove = document.createElement("button")
+    remove.type = "button"
+    remove.className = "renewal-remove"
+    remove.dataset.index = String(renewal.originalIndex)
+    remove.setAttribute("aria-label", "Remove " + renewal.name + " reminder")
+    remove.textContent = "Remove"
+
+    row.append(details, timing, status, remove)
     renewalQueue.append(row)
   }
 }
@@ -587,6 +594,20 @@ closeSourceEvidence.addEventListener("click", hideSourceEvidence)
 compareSourceEvidence.addEventListener("click", loadSourceComparison)
 downloadSourceReview.addEventListener("click", downloadSourceReviewPacket)
 downloadRenewals.addEventListener("click", downloadRenewalCalendar)
+renewalQueue.addEventListener("click", event => {
+  const button = event.target.closest(".renewal-remove")
+  if (!button) return
+  const index = Number(button.dataset.index)
+  if (!Number.isInteger(index) || index < 0 || index >= trackedRenewals.length) return
+
+  const [removed] = trackedRenewals.splice(index, 1)
+  const saved = saveRenewals()
+  renderRenewals()
+  showToast(saved
+    ? removed.name + " was removed from this browser."
+    : removed.name + " was removed for this page, but the browser could not save the change."
+  )
+})
 clearRenewals.addEventListener("click", () => {
   trackedRenewals = defaultRenewals.map(renewal => ({ ...renewal }))
   try {
