@@ -755,6 +755,14 @@ addPermitForm.addEventListener("submit", event => {
   const name = document.querySelector("#newPermitName").value.trim()
   const date = document.querySelector("#newPermitDate").value
   if (!name || !date) return
+  const normalizedName = name.toLowerCase()
+  const alreadyTracked = trackedRenewals.some(renewal =>
+    renewal.name.trim().toLowerCase() === normalizedName && renewal.dueDate === date
+  )
+  if (alreadyTracked) {
+    showToast("That permit is already tracked for this due date.")
+    return
+  }
   if (trackedRenewals.length >= 50) {
     showToast("Civra can track up to 50 renewal reminders in this browser.")
     return
