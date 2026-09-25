@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Civra</title>
-  <link rel="stylesheet" href="styles.css?v=7">
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
   <aside class="side">
@@ -138,7 +138,7 @@
     <section class="card renewals" id="renewalsCard" tabindex="-1">
       <div class="cardtop"><div><p class="eyebrow">RENEWAL REVIEW</p><h3>Review due dates before they become emergencies.</h3></div><div class="renewalactions"><button id="downloadRenewals" type="button">Download calendar</button><button id="clearRenewals" type="button">Reset demo dates</button></div></div>
       <p class="renewalsummary" id="renewalSummary" aria-live="polite"></p>
-      <div class="renewalqueue" id="renewalQueue"></div>
+      <div class="renewalqueue" id="renewalQueue" aria-live="polite" aria-relevant="additions removals text"></div>
       <p class="renewalnote">Civra stores reminder dates in this browser only. It never renews, pays, or submits anything automatically.</p>
     </section>
 
@@ -212,6 +212,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
