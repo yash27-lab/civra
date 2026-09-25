@@ -267,12 +267,23 @@ function renderRenewals() {
     .map((renewal, originalIndex) => ({ ...renewal, originalIndex, days: daysUntil(renewal.dueDate) }))
     .sort((left, right) => left.days - right.days)
 
+  renewalQueue.replaceChildren()
+  if (ordered.length === 0) {
+    renewalSummary.textContent = "No renewal reminders yet. Add a permit to start tracking due dates."
+    const empty = document.createElement("p")
+    empty.className = "renewal-empty"
+    empty.textContent = "Your reminders are saved in this browser when you add them."
+    renewalQueue.append(empty)
+    downloadRenewals.disabled = true
+    return
+  }
+
+  downloadRenewals.disabled = false
   const needsReview = ordered.filter(renewal => renewal.days <= 30).length
   renewalSummary.textContent = needsReview
     ? `${needsReview} renewal${needsReview === 1 ? "" : "s"} needs owner review in the next 30 days.`
     : "No tracked renewal needs owner review in the next 30 days."
 
-  renewalQueue.replaceChildren()
   for (const renewal of ordered) {
     const state = renewalState(renewal.days)
     const row = document.createElement("article")
