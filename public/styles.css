@@ -224,3 +224,6 @@ input[type=file] { position:absolute; left:-9999px; }
 
 .renewal-remove { flex:0 0 auto; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:white; color:#68736d; font-size:10px; cursor:pointer; }
 .renewal-remove:hover,.renewal-remove:focus-visible { border-color:#9b6a3d; color:#8a4738; }
+
+.renewal-empty { margin:14px 0; color:#748078; font-size:12px; line-height:1.5; }
+.renewalactions button:disabled { opacity:.45; cursor:not-allowed; }
