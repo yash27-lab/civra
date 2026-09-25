@@ -135,8 +135,7 @@ function loadRenewals() {
   try {
     const saved = JSON.parse(window.localStorage.getItem(renewalStorageKey) || "null")
     if (!Array.isArray(saved)) return defaultRenewals.map(renewal => ({ ...renewal }))
-    const renewals = saved.map(validRenewal).filter(Boolean).slice(0, 50)
-    return renewals.length > 0 ? renewals : defaultRenewals.map(renewal => ({ ...renewal }))
+    return saved.map(validRenewal).filter(Boolean).slice(0, 50)
   } catch {
     return defaultRenewals.map(renewal => ({ ...renewal }))
   }
