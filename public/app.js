@@ -231,6 +231,10 @@ function buildRenewalCalendar(renewals) {
 }
 
 function downloadRenewalCalendar() {
+  if (trackedRenewals.length === 0) {
+    showToast("Add a renewal reminder before downloading a calendar.")
+    return
+  }
   try {
     const calendar = buildRenewalCalendar(trackedRenewals)
     const blob = new Blob([calendar], { type: "text/calendar;charset=utf-8" })
