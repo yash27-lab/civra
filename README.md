@@ -64,10 +64,10 @@ worse than no answer.
   access code, per-session permit and document limits, a one-at-a-time sandbox
   limit, cached city checks, and failure cooldowns. The owner sees remaining
   check budgets before starting another paid action.
-- The owner dashboard ranks tracked renewal dates for review, persists
-  reminder names and dates in the same browser only, and can download a local
-  calendar review file; it never sends a notification, files a renewal, or
-  takes any external action.
+- The owner dashboard tracks up to 50 renewal reminders in this browser,
+  updates other open tabs, lets owners remove individual reminders, and can
+  download a local calendar review file. It never sends a notification, files
+  a renewal, or takes any external action.
 
 ## What Civra deliberately does not do
 
