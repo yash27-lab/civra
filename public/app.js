@@ -327,7 +327,7 @@ function renderRenewals() {
   downloadRenewals.disabled = false
   const needsReview = ordered.filter(renewal => renewal.days <= 30).length
   renewalSummary.textContent = needsReview
-    ? `${needsReview} renewal${needsReview === 1 ? "" : "s"} needs owner review in the next 30 days.`
+    ? `${needsReview} renewal${needsReview === 1 ? "" : "s"} ${needsReview === 1 ? "needs" : "need"} owner review in the next 30 days.`
     : "No tracked renewal needs owner review in the next 30 days."
 
   for (const renewal of ordered) {
