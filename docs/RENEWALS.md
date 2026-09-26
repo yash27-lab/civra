@@ -1,6 +1,6 @@
 # Owner-reviewed renewal reminders
 
-Civra ranks tracked permit dates into four review states:
+Civra ranks tracked permit dates into four review states. The dashboard's next-step card follows the nearest saved reminder and updates when a reminder is added, removed, or changed in another open tab:
 
 - **Overdue** — the date has passed.
 - **Review now** — due within 30 days.
