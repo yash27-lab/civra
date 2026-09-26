@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Civra</title>
-  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
   <aside class="side">
@@ -35,11 +35,11 @@
     </header>
 
     <section class="notice">
-      <div class="ring"><span>21</span><small>days</small></div>
+      <div class="ring"><span id="nextRenewalDays">—</span><small id="nextRenewalUnit">tracked</small></div>
       <div class="noticecopy">
         <p class="eyebrow light">NEXT STEP</p>
-        <h2>Your food permit needs care soon.</h2>
-        <p>Civra found the right city page. Verify one permit document, then review the evidence.</p>
+        <h2 id="nextRenewalTitle">Loading renewal dates.</h2>
+        <p id="nextRenewalDescription"></p>
       </div>
       <button class="open" id="openFlow">Open task</button>
     </section>
@@ -212,6 +212,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>
