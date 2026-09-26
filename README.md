@@ -66,8 +66,9 @@ worse than no answer.
   check budgets before starting another paid action.
 - The owner dashboard tracks up to 50 renewal reminders in this browser,
   updates other open tabs, lets owners remove individual reminders, and can
-  download a local calendar review file. It never sends a notification, files
-  a renewal, or takes any external action.
+  download a local calendar review file. The next-step card follows the
+  nearest tracked date, including overdue and empty states. It never sends a
+  notification, files a renewal, or takes any external action.
 
 ## What Civra deliberately does not do
 
