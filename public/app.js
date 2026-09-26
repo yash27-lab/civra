@@ -264,10 +264,15 @@ function daysUntil(value) {
 }
 
 function renewalState(days) {
-  if (days < 0) return { key: "overdue", label: "Overdue", detail: `${Math.abs(days)} days late` }
-  if (days <= 30) return { key: "now", label: "Review now", detail: `${days} days left` }
-  if (days <= 90) return { key: "soon", label: "Plan review", detail: `${days} days left` }
-  return { key: "planned", label: "Planned", detail: `${days} days left` }
+  if (days < 0) {
+    const lateDays = Math.abs(days)
+    return { key: "overdue", label: "Overdue", detail: `${lateDays} ${lateDays === 1 ? "day" : "days"} late` }
+  }
+  if (days === 0) return { key: "now", label: "Review now", detail: "Due today" }
+  const timing = `${days} ${days === 1 ? "day" : "days"} left`
+  if (days <= 30) return { key: "now", label: "Review now", detail: timing }
+  if (days <= 90) return { key: "soon", label: "Plan review", detail: timing }
+  return { key: "planned", label: "Planned", detail: timing }
 }
 
 function renderNextRenewal() {
