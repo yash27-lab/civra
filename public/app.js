@@ -30,6 +30,10 @@ const proofSummary = document.querySelector("#proofSummary")
 const proofSource = document.querySelector("#proofSource")
 const todayLabel = document.querySelector("#todayLabel")
 const greetingHeading = document.querySelector("#greetingHeading")
+const nextRenewalDays = document.querySelector("#nextRenewalDays")
+const nextRenewalUnit = document.querySelector("#nextRenewalUnit")
+const nextRenewalTitle = document.querySelector("#nextRenewalTitle")
+const nextRenewalDescription = document.querySelector("#nextRenewalDescription")
 const sourceHistoryCard = document.querySelector("#sourceHistoryCard")
 const sourceHistoryStatus = document.querySelector("#sourceHistoryStatus")
 const sourceHistoryList = document.querySelector("#sourceHistoryList")
@@ -266,7 +270,45 @@ function renewalState(days) {
   return { key: "planned", label: "Planned", detail: `${days} days left` }
 }
 
+function renderNextRenewal() {
+  const next = trackedRenewals
+    .map(renewal => ({ ...renewal, days: daysUntil(renewal.dueDate) }))
+    .sort((left, right) => left.days - right.days)[0]
+
+  if (!next) {
+    nextRenewalDays.textContent = "—"
+    nextRenewalUnit.textContent = "tracked"
+    nextRenewalTitle.textContent = "No renewal dates are tracked."
+    nextRenewalDescription.textContent = "Add a permit and due date to see the next owner review."
+    return
+  }
+
+  const due = localDate(next.dueDate).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  })
+  nextRenewalDescription.textContent = next.name + " · Due " + due + ". This date is a reminder for owner review."
+  if (next.days < 0) {
+    const lateDays = Math.abs(next.days)
+    nextRenewalDays.textContent = String(lateDays)
+    nextRenewalUnit.textContent = lateDays === 1 ? "day overdue" : "days overdue"
+    nextRenewalTitle.textContent = "A tracked renewal date has passed."
+  } else if (next.days === 0) {
+    nextRenewalDays.textContent = "0"
+    nextRenewalUnit.textContent = "due today"
+    nextRenewalTitle.textContent = "A tracked renewal date is due today."
+  } else {
+    nextRenewalDays.textContent = String(next.days)
+    nextRenewalUnit.textContent = next.days === 1 ? "day left" : "days left"
+    nextRenewalTitle.textContent = next.days <= 30
+      ? "A tracked renewal needs owner review soon."
+      : "Your next tracked renewal is coming up."
+  }
+}
+
 function renderRenewals() {
+  renderNextRenewal()
   const ordered = trackedRenewals
     .map((renewal, originalIndex) => ({ ...renewal, originalIndex, days: daysUntil(renewal.dueDate) }))
     .sort((left, right) => left.days - right.days)
