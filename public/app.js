@@ -728,6 +728,15 @@ function clearSelectedFile() {
   updateDocumentButton()
 }
 
+function clearDocumentReport() {
+  documentReport.hidden = true
+  documentTitle.textContent = "Document checked"
+  documentSummary.textContent = ""
+  documentMetadata.replaceChildren()
+  documentChecklist.replaceChildren()
+  documentRetention.textContent = ""
+}
+
 function appendDetail(parent, label, value) {
   const term = document.createElement("dt")
   term.textContent = label
@@ -996,6 +1005,9 @@ accessForm.addEventListener("submit", async event => {
 })
 
 signOut.addEventListener("click", async () => {
+  clearSelectedFile()
+  clearDocumentReport()
+  fileOk.textContent = "Civra was locked; the selected file and result were cleared."
   try {
     const response = await fetch("/api/session", { method: "DELETE" })
     const result = await response.json()
