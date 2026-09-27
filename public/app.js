@@ -100,6 +100,7 @@ let selectedSourceSnapshotId = null
 let selectedSourceSnapshot = null
 let selectedSourceComparison = null
 let sourceEvidenceRequest = 0
+let sourceComparisonRequest = 0
 const renewalStorageKey = "civra_renewals_v1"
 const defaultRenewals = [
   { name: "Food Service Permit", dueDate: "2026-09-21" },
@@ -409,6 +410,7 @@ function renderSourceHistory(snapshots) {
 }
 
 function hideSourceComparison() {
+  sourceComparisonRequest += 1
   sourceComparison.hidden = true
   sourceComparisonList.replaceChildren()
 }
@@ -567,6 +569,7 @@ function downloadSourceReviewPacket() {
 
 async function loadSourceComparison() {
   if (!selectedSourceSnapshotId) return
+  const requestId = ++sourceComparisonRequest
   sourceComparison.hidden = false
   sourceComparisonTitle.textContent = "Comparing recorded snapshots"
   sourceComparisonMeta.textContent = "Civra is comparing the recorded official-page evidence."
@@ -574,9 +577,11 @@ async function loadSourceComparison() {
   try {
     const response = await fetch("/api/source-history/" + encodeURIComponent(selectedSourceSnapshotId) + "/compare")
     const result = await response.json()
+    if (requestId !== sourceComparisonRequest) return
     if (!response.ok) throw new Error(result.message || "Civra could not compare these source snapshots.")
     renderSourceComparison(result.comparison || {})
   } catch (error) {
+    if (requestId !== sourceComparisonRequest) return
     sourceComparisonTitle.textContent = "Source comparison unavailable"
     sourceComparisonMeta.textContent = error instanceof Error ? error.message : "Civra could not compare these source snapshots."
   }
