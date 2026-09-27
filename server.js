@@ -153,6 +153,16 @@ function createServer({
   const sessions = new Map()
   const loginFailures = new Map()
 
+  function pruneExpiredState() {
+    const now = Date.now()
+    for (const [token, session] of sessions) {
+      if (now >= session.expiresAt) sessions.delete(token)
+    }
+    for (const [client, failure] of loginFailures) {
+      if (now >= failure.resetAt) loginFailures.delete(client)
+    }
+  }
+
   function getSession(request) {
     const token = readCookie(request, "civra_session")
     if (!token) return null
@@ -179,6 +189,7 @@ function createServer({
   }
 
   async function openSession(request, response) {
+    pruneExpiredState()
     if (!accessCode) {
       sendJson(response, 503, {
         code: "ACCESS_CODE_MISSING",
