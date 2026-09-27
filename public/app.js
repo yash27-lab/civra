@@ -860,7 +860,7 @@ addPermitForm.addEventListener("submit", event => {
     return
   }
   if (trackedRenewals.length >= maxTrackedRenewals) {
-    showToast("Civra can track up to ${maxTrackedRenewals} renewal reminders in this browser.")
+    showToast(`Civra can track up to ${maxTrackedRenewals} renewal reminders in this browser.`)
     return
   }
 
