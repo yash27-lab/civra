@@ -57,6 +57,7 @@ const documentChecklist = document.querySelector("#documentChecklist")
 const documentRetention = document.querySelector("#documentRetention")
 
 const maxFileBytes = 10 * 1024 * 1024
+const maxTrackedRenewals = 50
 
 const tourSteps = [
   {
@@ -140,7 +141,7 @@ function loadRenewals() {
   try {
     const saved = JSON.parse(window.localStorage.getItem(renewalStorageKey) || "null")
     if (!Array.isArray(saved)) return defaultRenewals.map(renewal => ({ ...renewal }))
-    return saved.map(validRenewal).filter(Boolean).slice(0, 50)
+    return saved.map(validRenewal).filter(Boolean).slice(0, maxTrackedRenewals)
   } catch {
     return defaultRenewals.map(renewal => ({ ...renewal }))
   }
@@ -858,8 +859,8 @@ addPermitForm.addEventListener("submit", event => {
     showToast("That permit is already tracked for this due date.")
     return
   }
-  if (trackedRenewals.length >= 50) {
-    showToast("Civra can track up to 50 renewal reminders in this browser.")
+  if (trackedRenewals.length >= maxTrackedRenewals) {
+    showToast("Civra can track up to ${maxTrackedRenewals} renewal reminders in this browser.")
     return
   }
 
