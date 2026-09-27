@@ -98,6 +98,7 @@ let sessionOpen = false
 let selectedSourceSnapshotId = null
 let selectedSourceSnapshot = null
 let selectedSourceComparison = null
+let sourceEvidenceRequest = 0
 const renewalStorageKey = "civra_renewals_v1"
 const defaultRenewals = [
   { name: "Food Service Permit", dueDate: "2026-09-21" },
@@ -412,6 +413,7 @@ function hideSourceComparison() {
 }
 
 function hideSourceEvidence() {
+  sourceEvidenceRequest += 1
   selectedSourceSnapshotId = null
   selectedSourceSnapshot = null
   selectedSourceComparison = null
@@ -473,17 +475,19 @@ function renderSourceEvidence(snapshot) {
 }
 
 async function loadSourceEvidence(snapshotId) {
+  hideSourceEvidence()
+  const requestId = ++sourceEvidenceRequest
   sourceEvidence.hidden = false
   sourceEvidenceTitle.textContent = "Loading recorded source evidence"
   sourceEvidenceMeta.textContent = "Civra is loading the saved official-page evidence."
-  sourceEvidenceChecks.replaceChildren()
-  sourceEvidenceLink.hidden = true
   try {
     const response = await fetch("/api/source-history/" + encodeURIComponent(snapshotId))
     const result = await response.json()
+    if (requestId !== sourceEvidenceRequest) return
     if (!response.ok) throw new Error(result.message || "Civra could not load this source evidence.")
     renderSourceEvidence(result.snapshot || {})
   } catch (error) {
+    if (requestId !== sourceEvidenceRequest) return
     sourceEvidenceTitle.textContent = "Recorded source evidence unavailable"
     sourceEvidenceMeta.textContent = error instanceof Error ? error.message : "Civra could not load this source evidence."
   }
