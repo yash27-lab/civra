@@ -26,8 +26,12 @@ async function writeJsonAtomically(file, value) {
     path.dirname(file),
     `.${path.basename(file)}.${process.pid}.${crypto.randomUUID()}.tmp`
   )
-  await fs.writeFile(temporary, JSON.stringify(value, null, 2) + "\n", "utf8")
-  await fs.rename(temporary, file)
+  try {
+    await fs.writeFile(temporary, JSON.stringify(value, null, 2) + "\n", "utf8")
+    await fs.rename(temporary, file)
+  } finally {
+    await fs.rm(temporary, { force: true }).catch(() => undefined)
+  }
 }
 
 function publicSnapshot(check, snapshotId, observedAt, existing, previousSnapshotId) {
