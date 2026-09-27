@@ -1021,6 +1021,25 @@ signOut.addEventListener("click", async () => {
   }
 })
 
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape") return
+  if (guide.classList.contains("show")) {
+    guide.classList.remove("show")
+    guide.setAttribute("aria-hidden", "true")
+    return
+  }
+  if (permitForm.classList.contains("show")) {
+    permitForm.classList.remove("show")
+    permitForm.setAttribute("aria-hidden", "true")
+    return
+  }
+  if (sheet.classList.contains("show")) {
+    closeSheet()
+    return
+  }
+  if (!sourceEvidence.hidden) hideSourceEvidence()
+})
+
 window.addEventListener("storage", event => {
   if (event.key !== null && event.key !== renewalStorageKey) return
   trackedRenewals = loadRenewals()
