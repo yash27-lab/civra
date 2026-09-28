@@ -228,3 +228,6 @@ input[type=file] { position:absolute; left:-9999px; }
 
 .renewal-empty { margin:14px 0; color:#748078; font-size:12px; line-height:1.5; }
 .renewalactions button:disabled { opacity:.45; cursor:not-allowed; }
+
+.skip-link { position:fixed; top:10px; left:10px; z-index:20; padding:10px 14px; transform:translateY(-160%); border-radius:6px; background:white; color:var(--ink); font-size:12px; font-weight:bold; box-shadow:0 3px 14px #0003; }
+.skip-link:focus { transform:translateY(0); }
