@@ -231,3 +231,7 @@ input[type=file] { position:absolute; left:-9999px; }
 
 .skip-link { position:fixed; top:10px; left:10px; z-index:20; padding:10px 14px; transform:translateY(-160%); border-radius:6px; background:white; color:var(--ink); font-size:12px; font-weight:bold; box-shadow:0 3px 14px #0003; }
 .skip-link:focus { transform:translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; }
+}
