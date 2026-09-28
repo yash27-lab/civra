@@ -12,7 +12,7 @@
   <a class="skip-link" href="#mainContent">Skip to main content</a>
   <aside class="side">
     <a class="brand" href="#">Civra<span>.</span></a>
-    <nav>
+    <nav aria-label="Main navigation">
       <button class="nav active" data-page="home"><span>01</span> Home</button>
       <button class="nav" data-page="permits"><span>02</span> Permits</button>
       <button class="nav" data-page="renewals"><span>03</span> Renewal review</button>
@@ -207,8 +207,8 @@
       <button class="close" id="closePermitForm" type="button">Close</button>
       <p class="eyebrow">ADD A PERMIT</p>
       <h2 id="permitFormTitle">What should Civra track?</h2>
-      <label class="field">Permit name<input id="newPermitName" name="permitName" required maxlength="80" placeholder="Food Service Permit"></label>
-      <label class="field">Due date<input id="newPermitDate" name="permitDate" required type="date"></label>
+      <label class="field">Permit name<input id="newPermitName" name="permitName" required maxlength="80" aria-describedby="permitNameHint" placeholder="Food Service Permit"><small id="permitNameHint">Use a short name that helps you recognize this reminder.</small></label>
+      <label class="field">Due date<input id="newPermitDate" name="permitDate" required type="date" aria-describedby="permitDateHint"><small id="permitDateHint">Use the due date shown on your permit or notice.</small></label>
       <p class="formnote">Civra saves this reminder in this browser only. It is not sent anywhere.</p>
       <button class="continue" id="permitFormSubmit" type="submit">Save permit</button>
     </form>
