@@ -95,6 +95,7 @@ const tourSteps = [
 let tourStep = 0
 let toastTimer
 let selectedFile = null
+let editingRenewal = null
 let sessionOpen = false
 let selectedSourceSnapshotId = null
 let selectedSourceSnapshot = null
@@ -358,6 +359,13 @@ function renderRenewals() {
     timing.className = "renewaltiming"
     timing.textContent = state.detail
 
+    const edit = document.createElement("button")
+    edit.type = "button"
+    edit.className = "renewal-edit"
+    edit.dataset.index = String(renewal.originalIndex)
+    edit.setAttribute("aria-label", "Edit " + renewal.name + " reminder")
+    edit.textContent = "Edit"
+
     const remove = document.createElement("button")
     remove.type = "button"
     remove.className = "renewal-remove"
@@ -365,7 +373,7 @@ function renderRenewals() {
     remove.setAttribute("aria-label", "Remove " + renewal.name + " reminder")
     remove.textContent = "Remove"
 
-    row.append(details, timing, status, remove)
+    row.append(details, timing, status, edit, remove)
     renewalQueue.append(row)
   }
 }
@@ -646,15 +654,31 @@ function closeSheet() {
 document.querySelector("#openFlow").addEventListener("click", openSheet)
 document.querySelector("#closeFlow").addEventListener("click", closeSheet)
 document.querySelector("#closeButton").addEventListener("click", closeSheet)
-document.querySelector("#addPermit").addEventListener("click", () => {
+function openRenewalForm(renewal = null) {
+  editingRenewal = renewal ? { ...renewal } : null
+  addPermitForm.reset()
+  document.querySelector("#permitFormTitle").textContent = renewal ? "Edit renewal reminder" : "What should Civra track?"
+  document.querySelector("#permitFormSubmit").textContent = renewal ? "Save changes" : "Save permit"
+  if (renewal) {
+    document.querySelector("#newPermitName").value = renewal.name
+    document.querySelector("#newPermitDate").value = renewal.dueDate
+  }
   permitForm.classList.add("show")
   permitForm.setAttribute("aria-hidden", "false")
   document.querySelector("#newPermitName").focus()
-})
-document.querySelector("#closePermitForm").addEventListener("click", () => {
+}
+
+function closeRenewalForm() {
+  editingRenewal = null
+  addPermitForm.reset()
+  document.querySelector("#permitFormTitle").textContent = "What should Civra track?"
+  document.querySelector("#permitFormSubmit").textContent = "Save permit"
   permitForm.classList.remove("show")
   permitForm.setAttribute("aria-hidden", "true")
-})
+}
+
+document.querySelector("#addPermit").addEventListener("click", () => openRenewalForm())
+document.querySelector("#closePermitForm").addEventListener("click", closeRenewalForm)
 document.querySelector("#viewPermits").addEventListener("click", () => showAndFocus(permitsCard))
 document.querySelector("#viewHistory").addEventListener("click", () => showAndFocus(historyCard))
 sourceHistoryList.addEventListener("click", event => {
@@ -666,6 +690,15 @@ compareSourceEvidence.addEventListener("click", loadSourceComparison)
 downloadSourceReview.addEventListener("click", downloadSourceReviewPacket)
 downloadRenewals.addEventListener("click", downloadRenewalCalendar)
 renewalQueue.addEventListener("click", event => {
+  const editButton = event.target.closest(".renewal-edit")
+  if (editButton) {
+    const index = Number(editButton.dataset.index)
+    if (Number.isInteger(index) && index >= 0 && index < trackedRenewals.length) {
+      openRenewalForm(trackedRenewals[index])
+    }
+    return
+  }
+
   const button = event.target.closest(".renewal-remove")
   if (!button) return
   const index = Number(button.dataset.index)
@@ -856,53 +889,41 @@ addPermitForm.addEventListener("submit", event => {
   const name = document.querySelector("#newPermitName").value.trim()
   const date = document.querySelector("#newPermitDate").value
   if (!name || !date) return
+
+  const editingIndex = editingRenewal
+    ? trackedRenewals.findIndex(renewal => renewal.name === editingRenewal.name && renewal.dueDate === editingRenewal.dueDate)
+    : -1
+  if (editingRenewal && editingIndex < 0) {
+    showToast("That reminder changed in another tab. Reopen it before editing.")
+    closeRenewalForm()
+    return
+  }
+
   const normalizedName = name.toLowerCase()
-  const alreadyTracked = trackedRenewals.some(renewal =>
-    renewal.name.trim().toLowerCase() === normalizedName && renewal.dueDate === date
+  const alreadyTracked = trackedRenewals.some((renewal, index) =>
+    index !== editingIndex && renewal.name.trim().toLowerCase() === normalizedName && renewal.dueDate === date
   )
   if (alreadyTracked) {
     showToast("That permit is already tracked for this due date.")
     return
   }
-  if (trackedRenewals.length >= maxTrackedRenewals) {
+  if (editingIndex < 0 && trackedRenewals.length >= maxTrackedRenewals) {
     showToast(`Civra can track up to ${maxTrackedRenewals} renewal reminders in this browser.`)
     return
   }
 
-  const row = document.createElement("div")
-  row.className = "permitrow"
-
-  const icon = document.createElement("div")
-  icon.className = "icon pale"
-  icon.textContent = name.split(/\s+/).slice(0, 2).map(word => word[0]).join("").toUpperCase()
-
-  const details = document.createElement("div")
-  details.className = "grow"
-  const title = document.createElement("strong")
-  title.textContent = name
-  const due = document.createElement("span")
-  due.textContent = `Due ${new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}`
-  details.append(title, due)
-
-  const state = document.createElement("span")
-  state.className = "pill safe"
-  state.textContent = "Added"
-  row.append(icon, details, state)
-  document.querySelector(".permits").append(row)
-  trackedRenewals.push({ name, dueDate: date })
+  const isEditing = editingIndex >= 0
+  if (isEditing) trackedRenewals[editingIndex] = { name, dueDate: date }
+  else trackedRenewals.push({ name, dueDate: date })
   const saved = saveRenewals()
   renderRenewals()
-
-  permitForm.classList.remove("show")
-  permitForm.setAttribute("aria-hidden", "true")
-  addPermitForm.reset()
-  showAndFocus(permitsCard)
+  closeRenewalForm()
+  showAndFocus(renewalsCard)
   showToast(saved
-    ? `${name} was saved in this browser for renewal review.`
-    : `${name} was added for this page, but this browser could not save the reminder.`
+    ? `${name} was ${isEditing ? "updated" : "saved"} in this browser for renewal review.`
+    : `${name} was ${isEditing ? "updated" : "added"} for this page, but the browser could not save the reminder.`
   )
 })
-
 liveCheck.addEventListener("click", async () => {
   liveCheck.disabled = true
   liveStatus.textContent = "Solari is checking the official city page."
