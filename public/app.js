@@ -97,6 +97,7 @@ let toastTimer
 let selectedFile = null
 let editingRenewal = null
 let sessionOpen = false
+let sheetReturnFocus = null
 let selectedSourceSnapshotId = null
 let selectedSourceSnapshot = null
 let selectedSourceComparison = null
@@ -681,14 +682,18 @@ function showTourStep() {
   tourNext.textContent = tourStep === tourSteps.length - 1 ? "Open my permit task" : "Next step"
 }
 
-function openSheet() {
+function openSheet(returnFocus = document.activeElement) {
+  sheetReturnFocus = returnFocus
   sheet.classList.add("show")
   sheet.setAttribute("aria-hidden", "false")
+  document.querySelector("#closeButton").focus()
 }
 
 function closeSheet() {
   sheet.classList.remove("show")
   sheet.setAttribute("aria-hidden", "true")
+  if (sheetReturnFocus && sheetReturnFocus.isConnected) sheetReturnFocus.focus()
+  sheetReturnFocus = null
 }
 
 document.querySelector("#openFlow").addEventListener("click", openSheet)
@@ -798,7 +803,7 @@ tourNext.addEventListener("click", () => {
   }
   guide.classList.remove("show")
   guide.setAttribute("aria-hidden", "true")
-  openSheet()
+  openSheet(document.querySelector("#helpButton"))
 })
 
 function updateDocumentButton() {
