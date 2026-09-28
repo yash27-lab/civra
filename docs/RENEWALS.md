@@ -9,7 +9,7 @@ Civra ranks tracked permit dates into four review states. The dashboard's next-s
 
 These states are prompts for an owner to review their permit, evidence, and city requirements. Civra does not renew a permit, send a form, pay a fee, or contact a city service.
 
-The current demo stores up to 50 reminder names and dates in the browser's local storage. Changes appear in other open Civra tabs in the same browser. Each reminder can be removed on its own; the **Reset demo dates** button removes owner-added reminders and restores the sample dates. Reminder data is not sent to the Civra server, shared across devices, or used to trigger notifications.
+The current demo stores up to 50 reminder names and dates in the browser's local storage. Changes appear in other open Civra tabs in the same browser. Each reminder can be edited or removed on its own; the **Reset demo dates** button removes owner-added reminders and restores the sample dates. If a reminder changes in another open tab while its edit form is open, Civra asks the owner to reopen it rather than overwriting the newer value. Reminder data is not sent to the Civra server, shared across devices, or used to trigger notifications.
 
 ## Calendar export
 
