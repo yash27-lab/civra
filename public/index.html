@@ -156,10 +156,10 @@
 
   <div class="sheet" id="sheet" aria-hidden="true">
     <div class="shade" id="closeFlow"></div>
-    <section class="panel">
+    <section class="panel" role="dialog" aria-modal="true" aria-labelledby="documentDialogTitle">
       <button class="close" id="closeButton">Close</button>
       <p class="eyebrow">FOOD SERVICE PERMIT</p>
-      <h2>Verify a permit document.</h2>
+      <h2 id="documentDialogTitle">Verify a permit document.</h2>
       <p class="lead">Civra checks the actual file signature before reading basic text or image metadata in an ephemeral sandbox. It will not submit your file.</p>
       <div class="check"><span class="checkmark">✓</span><div><strong>Business name</strong><p>Maya's Kitchen</p><small>From your business file</small></div></div>
       <div class="check"><span class="checkmark">✓</span><div><strong>Business address</strong><p>128 Orchard Street, New York, NY</p><small>From your lease</small></div></div>
