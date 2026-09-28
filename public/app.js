@@ -98,6 +98,8 @@ let selectedFile = null
 let editingRenewal = null
 let sessionOpen = false
 let sheetReturnFocus = null
+let guideReturnFocus = null
+let permitFormReturnFocus = null
 let selectedSourceSnapshotId = null
 let selectedSourceSnapshot = null
 let selectedSourceComparison = null
@@ -699,8 +701,9 @@ function closeSheet() {
 document.querySelector("#openFlow").addEventListener("click", openSheet)
 document.querySelector("#closeFlow").addEventListener("click", closeSheet)
 document.querySelector("#closeButton").addEventListener("click", closeSheet)
-function openRenewalForm(renewal = null) {
+function openRenewalForm(renewal = null, returnFocus = document.activeElement) {
   editingRenewal = renewal ? { ...renewal } : null
+  permitFormReturnFocus = returnFocus
   addPermitForm.reset()
   document.querySelector("#permitFormTitle").textContent = renewal ? "Edit renewal reminder" : "What should Civra track?"
   document.querySelector("#permitFormSubmit").textContent = renewal ? "Save changes" : "Save permit"
@@ -720,9 +723,13 @@ function closeRenewalForm() {
   document.querySelector("#permitFormSubmit").textContent = "Save permit"
   permitForm.classList.remove("show")
   permitForm.setAttribute("aria-hidden", "true")
+  const returnFocus = permitFormReturnFocus
+  permitFormReturnFocus = null
+  if (returnFocus && returnFocus.isConnected) returnFocus.focus()
+  else document.querySelector("#addPermit").focus()
 }
 
-document.querySelector("#addPermit").addEventListener("click", () => openRenewalForm())
+document.querySelector("#addPermit").addEventListener("click", event => openRenewalForm(null, event.currentTarget))
 document.querySelector("#closePermitForm").addEventListener("click", closeRenewalForm)
 document.querySelector("#viewPermits").addEventListener("click", () => showAndFocus(permitsCard))
 document.querySelector("#viewHistory").addEventListener("click", () => showAndFocus(historyCard))
@@ -739,7 +746,7 @@ renewalQueue.addEventListener("click", event => {
   if (editButton) {
     const index = Number(editButton.dataset.index)
     if (Number.isInteger(index) && index >= 0 && index < trackedRenewals.length) {
-      openRenewalForm(trackedRenewals[index])
+      openRenewalForm(trackedRenewals[index], editButton)
     }
     return
   }
@@ -780,16 +787,23 @@ document.querySelectorAll(".nav").forEach(button => {
     if (page === "history") showAndFocus(historyCard)
   })
 })
-document.querySelector("#helpButton").addEventListener("click", () => {
+function closeGuide() {
+  guide.classList.remove("show")
+  guide.setAttribute("aria-hidden", "true")
+  const returnFocus = guideReturnFocus
+  guideReturnFocus = null
+  if (returnFocus && returnFocus.isConnected) returnFocus.focus()
+}
+
+document.querySelector("#helpButton").addEventListener("click", event => {
+  guideReturnFocus = event.currentTarget
   tourStep = 0
   showTourStep()
   guide.classList.add("show")
   guide.setAttribute("aria-hidden", "false")
+  document.querySelector("#closeGuide").focus()
 })
-document.querySelector("#closeGuide").addEventListener("click", () => {
-  guide.classList.remove("show")
-  guide.setAttribute("aria-hidden", "true")
-})
+document.querySelector("#closeGuide").addEventListener("click", closeGuide)
 tourBack.addEventListener("click", () => {
   if (tourStep === 0) return
   tourStep -= 1
@@ -1096,13 +1110,11 @@ signOut.addEventListener("click", async () => {
 document.addEventListener("keydown", event => {
   if (event.key !== "Escape") return
   if (guide.classList.contains("show")) {
-    guide.classList.remove("show")
-    guide.setAttribute("aria-hidden", "true")
+    closeGuide()
     return
   }
   if (permitForm.classList.contains("show")) {
-    permitForm.classList.remove("show")
-    permitForm.setAttribute("aria-hidden", "true")
+    closeRenewalForm()
     return
   }
   if (sheet.classList.contains("show")) {
