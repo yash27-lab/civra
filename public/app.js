@@ -316,8 +316,48 @@ function renderNextRenewal() {
   }
 }
 
+function createTrackedPermitRow(renewal) {
+  const row = document.createElement("div")
+  row.className = "permitrow"
+  row.dataset.renewalName = renewal.name
+  row.dataset.renewalDate = renewal.dueDate
+
+  const icon = document.createElement("div")
+  icon.className = "icon pale"
+  icon.textContent = renewal.name.split(/\s+/).slice(0, 2).map(word => word[0]).join("").toUpperCase()
+
+  const details = document.createElement("div")
+  details.className = "grow"
+  const title = document.createElement("strong")
+  title.textContent = renewal.name
+  const due = document.createElement("span")
+  due.textContent = "Due " + localDate(renewal.dueDate).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  })
+  details.append(title, due)
+
+  const status = document.createElement("span")
+  status.className = "pill safe"
+  status.textContent = "Tracked"
+  row.append(icon, details, status)
+  return row
+}
+
+function renderTrackedPermitRows() {
+  permitsCard.querySelectorAll(".permitrow[data-renewal-name]").forEach(row => row.remove())
+  for (const renewal of trackedRenewals) {
+    const isExample = defaultRenewals.some(example =>
+      example.name === renewal.name && example.dueDate === renewal.dueDate
+    )
+    if (!isExample) permitsCard.append(createTrackedPermitRow(renewal))
+  }
+}
+
 function renderRenewals() {
   renderNextRenewal()
+  renderTrackedPermitRows()
   const ordered = trackedRenewals
     .map((renewal, originalIndex) => ({ ...renewal, originalIndex, days: daysUntil(renewal.dueDate) }))
     .sort((left, right) => left.days - right.days)
@@ -918,7 +958,7 @@ addPermitForm.addEventListener("submit", event => {
   const saved = saveRenewals()
   renderRenewals()
   closeRenewalForm()
-  showAndFocus(renewalsCard)
+  showAndFocus(permitsCard)
   showToast(saved
     ? `${name} was ${isEditing ? "updated" : "saved"} in this browser for renewal review.`
     : `${name} was ${isEditing ? "updated" : "added"} for this page, but the browser could not save the reminder.`
