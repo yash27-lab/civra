@@ -311,6 +311,10 @@ async function restoreRenewalBackupFile(file) {
       throw new Error("Choose a backup smaller than 128 KB.")
     }
     const renewals = parseRenewalBackup(await file.text())
+    if (trackedRenewals.length > 0 && !window.confirm("Replace the " + trackedRenewals.length + " current reminders with " + renewals.length + " reminders from this backup?")) {
+      showToast("Backup restore was canceled; your current reminders were kept.")
+      return
+    }
     if (!saveRenewals(renewals)) {
       throw new Error("Civra could not save the backup in this browser. Existing reminders were kept.")
     }
