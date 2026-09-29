@@ -64,9 +64,13 @@
       <section class="sourceevidence" id="sourceEvidence" aria-live="polite" hidden>
         <div class="cardtop"><div><p class="eyebrow">SNAPSHOT EVIDENCE</p><h3 id="sourceEvidenceTitle">Recorded source evidence</h3></div><button id="closeSourceEvidence" type="button">Close evidence</button></div>
         <p class="sourceevidencemeta" id="sourceEvidenceMeta"></p>
+        <div class="sourceevidencefingerprint">
+          <div><strong>Full SHA-256 fingerprint</strong><code id="sourceFingerprintValue"></code></div>
+        </div>
         <div class="sourceevidencechecks" id="sourceEvidenceChecks"></div>
         <div class="sourceevidenceactions">
           <button class="compareevidence" id="compareSourceEvidence" type="button" hidden>Compare with prior snapshot</button>
+          <button class="copyfingerprint" id="copySourceFingerprint" type="button" hidden>Copy fingerprint</button>
           <button class="downloadreview" id="downloadSourceReview" type="button" hidden>Download review packet</button>
         </div>
         <section class="sourcecomparison" id="sourceComparison" hidden>

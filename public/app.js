@@ -44,10 +44,12 @@ const sourceHistoryList = document.querySelector("#sourceHistoryList")
 const sourceEvidence = document.querySelector("#sourceEvidence")
 const sourceEvidenceTitle = document.querySelector("#sourceEvidenceTitle")
 const sourceEvidenceMeta = document.querySelector("#sourceEvidenceMeta")
+const sourceFingerprintValue = document.querySelector("#sourceFingerprintValue")
 const sourceEvidenceChecks = document.querySelector("#sourceEvidenceChecks")
 const sourceEvidenceLink = document.querySelector("#sourceEvidenceLink")
 const closeSourceEvidence = document.querySelector("#closeSourceEvidence")
 const compareSourceEvidence = document.querySelector("#compareSourceEvidence")
+const copySourceFingerprint = document.querySelector("#copySourceFingerprint")
 const downloadSourceReview = document.querySelector("#downloadSourceReview")
 const sourceComparison = document.querySelector("#sourceComparison")
 const sourceComparisonTitle = document.querySelector("#sourceComparisonTitle")
@@ -575,10 +577,13 @@ function hideSourceEvidence() {
   selectedSourceSnapshot = null
   selectedSourceComparison = null
   sourceEvidence.hidden = true
+  sourceFingerprintValue.textContent = ""
   sourceEvidenceChecks.replaceChildren()
   sourceEvidenceLink.hidden = true
   sourceEvidenceLink.removeAttribute("href")
   compareSourceEvidence.hidden = true
+  copySourceFingerprint.hidden = true
+  delete copySourceFingerprint.dataset.fingerprint
   downloadSourceReview.hidden = true
   hideSourceComparison()
 }
@@ -590,7 +595,12 @@ function renderSourceEvidence(snapshot) {
   sourceEvidenceTitle.textContent = snapshot.title || snapshot.source || "Recorded source evidence"
   const observedAt = snapshot.lastObservedAt ? new Date(snapshot.lastObservedAt).toLocaleString() : "an unknown time"
   const state = snapshot.pageVerified ? "passed Civra's source checks" : "needs owner review"
-  sourceEvidenceMeta.textContent = `Recorded ${observedAt}. This snapshot ${state}. Fingerprint ${String(snapshot.sourceFingerprint || snapshot.snapshotId).slice(0, 16)}.`
+  sourceEvidenceMeta.textContent = `Recorded ${observedAt}. This snapshot ${state}.`
+  const fingerprint = String(snapshot.sourceFingerprint || snapshot.snapshotId || "")
+  const hasFingerprint = /^[a-f0-9]{64}$/i.test(fingerprint)
+  sourceFingerprintValue.textContent = hasFingerprint ? fingerprint : "No SHA-256 fingerprint is available for this snapshot."
+  if (hasFingerprint) copySourceFingerprint.dataset.fingerprint = fingerprint
+  copySourceFingerprint.hidden = !hasFingerprint
 
   sourceEvidenceChecks.replaceChildren()
   const checks = Object.entries(snapshot.checks || {})
@@ -842,6 +852,17 @@ sourceHistoryList.addEventListener("click", event => {
 })
 closeSourceEvidence.addEventListener("click", hideSourceEvidence)
 compareSourceEvidence.addEventListener("click", loadSourceComparison)
+copySourceFingerprint.addEventListener("click", async () => {
+  const fingerprint = copySourceFingerprint.dataset.fingerprint
+  if (!fingerprint) return
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("Clipboard access is unavailable.")
+    await navigator.clipboard.writeText(fingerprint)
+    showToast("Full SHA-256 fingerprint copied.")
+  } catch {
+    showToast("Select the fingerprint above to copy it manually.")
+  }
+})
 downloadSourceReview.addEventListener("click", downloadSourceReviewPacket)
 downloadRenewals.addEventListener("click", downloadRenewalCalendar)
 downloadRenewalBackup.addEventListener("click", downloadRenewalBackupFile)
