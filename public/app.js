@@ -1135,7 +1135,12 @@ addPermitForm.addEventListener("submit", event => {
   event.preventDefault()
   const name = document.querySelector("#newPermitName").value.replace(/\s+/g, " ").trim()
   const date = document.querySelector("#newPermitDate").value
-  if (!name || !date) return
+  if (!name) {
+    showToast("Enter a permit name before saving.")
+    document.querySelector("#newPermitName").focus()
+    return
+  }
+  if (!date) return
 
   const editingIndex = editingRenewal
     ? trackedRenewals.findIndex(renewal => renewal.name === editingRenewal.name && renewal.dueDate === editingRenewal.dueDate)
