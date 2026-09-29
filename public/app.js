@@ -294,6 +294,7 @@ function buildRenewalCalendar(renewals) {
         "DTSTAMP:" + timestamp,
         "DTSTART;VALUE=DATE:" + formatIcsDate(reviewDate),
         "DTEND;VALUE=DATE:" + formatIcsDate(endDate),
+        "TRANSP:TRANSPARENT",
         "SUMMARY:" + icsEscape("Review renewal: " + renewal.name),
         "DESCRIPTION:" + icsEscape("Created locally by Civra for owner review only. Civra will not submit, pay, or notify anyone."),
         "END:VEVENT"
