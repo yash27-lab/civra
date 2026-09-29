@@ -303,6 +303,28 @@ function downloadRenewalBackupFile() {
   }
 }
 
+async function restoreRenewalBackupFile(file) {
+  if (!file) return
+  restoreRenewalBackupButton.disabled = true
+  try {
+    if (file.size > maxRenewalBackupBytes) {
+      throw new Error("Choose a backup smaller than 128 KB.")
+    }
+    const renewals = parseRenewalBackup(await file.text())
+    if (!saveRenewals(renewals)) {
+      throw new Error("Civra could not save the backup in this browser. Existing reminders were kept.")
+    }
+    trackedRenewals = renewals
+    renderRenewals()
+    showToast(renewals.length + " reminder" + (renewals.length === 1 ? "" : "s") + " restored from backup.")
+  } catch (error) {
+    showToast(error instanceof Error ? error.message : "Civra could not restore this backup.")
+  } finally {
+    renewalBackupInput.value = ""
+    restoreRenewalBackupButton.disabled = false
+  }
+}
+
 function downloadRenewalCalendar() {
   if (trackedRenewals.length === 0) {
     showToast("Add a renewal reminder before downloading a calendar.")
