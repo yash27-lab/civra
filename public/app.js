@@ -25,6 +25,9 @@ const renewalSummary = document.querySelector("#renewalSummary")
 const renewalQueue = document.querySelector("#renewalQueue")
 const downloadRenewals = document.querySelector("#downloadRenewals")
 const clearRenewals = document.querySelector("#clearRenewals")
+const downloadRenewalBackup = document.querySelector("#downloadRenewalBackup")
+const restoreRenewalBackupButton = document.querySelector("#restoreRenewalBackupButton")
+const renewalBackupInput = document.querySelector("#renewalBackupInput")
 const historyCard = document.querySelector("#historyCard")
 const proofSummary = document.querySelector("#proofSummary")
 const proofSource = document.querySelector("#proofSource")
@@ -58,6 +61,7 @@ const documentRetention = document.querySelector("#documentRetention")
 
 const maxFileBytes = 10 * 1024 * 1024
 const maxTrackedRenewals = 50
+const maxRenewalBackupBytes = 128 * 1024
 
 const tourSteps = [
   {
@@ -162,6 +166,14 @@ function saveRenewals() {
 }
 
 let trackedRenewals = loadRenewals()
+
+function buildRenewalBackup(renewals = trackedRenewals, exportedAt = new Date().toISOString()) {
+  return {
+    schemaVersion: 1,
+    exportedAt,
+    reminders: renewals.map(({ name, dueDate }) => ({ name, dueDate }))
+  }
+}
 
 function formatIcsDate(date) {
   const pad = value => String(value).padStart(2, "0")
