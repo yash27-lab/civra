@@ -156,9 +156,9 @@ function loadRenewals() {
   }
 }
 
-function saveRenewals() {
+function saveRenewals(renewals = trackedRenewals) {
   try {
-    window.localStorage.setItem(renewalStorageKey, JSON.stringify(trackedRenewals))
+    window.localStorage.setItem(renewalStorageKey, JSON.stringify(renewals))
     return true
   } catch {
     return false
