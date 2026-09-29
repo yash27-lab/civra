@@ -28,6 +28,7 @@ const clearRenewals = document.querySelector("#clearRenewals")
 const downloadRenewalBackup = document.querySelector("#downloadRenewalBackup")
 const restoreRenewalBackupButton = document.querySelector("#restoreRenewalBackupButton")
 const renewalBackupInput = document.querySelector("#renewalBackupInput")
+const renewalBackupStatus = document.querySelector("#renewalBackupStatus")
 const historyCard = document.querySelector("#historyCard")
 const proofSummary = document.querySelector("#proofSummary")
 const proofSource = document.querySelector("#proofSource")
@@ -306,12 +307,14 @@ function downloadRenewalBackupFile() {
 async function restoreRenewalBackupFile(file) {
   if (!file) return
   restoreRenewalBackupButton.disabled = true
+  renewalBackupStatus.textContent = "Checking the selected backup file."
   try {
     if (file.size > maxRenewalBackupBytes) {
       throw new Error("Choose a backup smaller than 128 KB.")
     }
     const renewals = parseRenewalBackup(await file.text())
     if (trackedRenewals.length > 0 && !window.confirm("Replace the " + trackedRenewals.length + " current reminders with " + renewals.length + " reminders from this backup?")) {
+      renewalBackupStatus.textContent = "Restore canceled. Current reminders were kept."
       showToast("Backup restore was canceled; your current reminders were kept.")
       return
     }
@@ -320,9 +323,11 @@ async function restoreRenewalBackupFile(file) {
     }
     trackedRenewals = renewals
     renderRenewals()
+    renewalBackupStatus.textContent = renewals.length + " reminder" + (renewals.length === 1 ? "" : "s") + " restored."
     showToast(renewals.length + " reminder" + (renewals.length === 1 ? "" : "s") + " restored from backup.")
   } catch (error) {
-    showToast(error instanceof Error ? error.message : "Civra could not restore this backup.")
+    renewalBackupStatus.textContent = error instanceof Error ? error.message : "Civra could not restore this backup."
+    showToast(renewalBackupStatus.textContent)
   } finally {
     renewalBackupInput.value = ""
     restoreRenewalBackupButton.disabled = false
