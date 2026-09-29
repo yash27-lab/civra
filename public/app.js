@@ -224,6 +224,11 @@ function formatIcsDate(date) {
   return String(date.getFullYear()) + pad(date.getMonth() + 1) + pad(date.getDate())
 }
 
+function localDateKey(date = new Date()) {
+  const pad = value => String(value).padStart(2, "0")
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
 function icsEscape(value) {
   return String(value)
     .replace(/\\/g, "\\\\")
@@ -314,7 +319,7 @@ function downloadRenewalBackupFile() {
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = "civra-renewals-" + new Date().toISOString().slice(0, 10) + ".json"
+    link.download = "civra-renewals-" + localDateKey() + ".json"
     link.hidden = true
     document.body.append(link)
     link.click()
