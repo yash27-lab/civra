@@ -237,3 +237,5 @@ input[type=file] { position:absolute; left:-9999px; }
 }
 
 .field small { color:#748078; font-size:11px; font-weight:400; line-height:1.45; }
+
+.renewal-backup-status { min-height:16px; margin:0 0 10px; color:#65716a; font-size:11px; line-height:1.45; }
