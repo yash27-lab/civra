@@ -13,17 +13,17 @@
   <aside class="side">
     <a class="brand" href="#">Civra<span>.</span></a>
     <nav aria-label="Main navigation">
-      <button class="nav active" data-page="home"><span>01</span> Home</button>
+      <button class="nav active" data-page="home" aria-current="location"><span>01</span> Home</button>
       <button class="nav" data-page="permits"><span>02</span> Permits</button>
       <button class="nav" data-page="renewals"><span>03</span> Renewal review</button>
-      <button class="nav" data-page="files"><span>04</span> Files</button>
+      <button class="nav" data-page="files" aria-haspopup="dialog" aria-controls="sheet" aria-expanded="false"><span>04</span> Files</button>
       <button class="nav" data-page="history"><span>05</span> History</button>
     </nav>
     <div class="help">
       <div class="helpmark">?</div>
       <p>Need help?</p>
       <small>We can guide you at any step.</small>
-      <button id="helpButton">Show me how</button>
+      <button id="helpButton" aria-haspopup="dialog" aria-controls="guide" aria-expanded="false">Show me how</button>
     </div>
     <div class="person">
       <div class="avatar">MN</div>
@@ -34,7 +34,7 @@
   <main id="mainContent" tabindex="-1">
     <header>
       <div><p class="eyebrow" id="todayLabel"></p><h1 id="greetingHeading"></h1></div>
-      <button class="add" id="addPermit">Add a permit</button>
+      <button class="add" id="addPermit" aria-haspopup="dialog" aria-controls="permitForm" aria-expanded="false">Add a permit</button>
     </header>
 
     <section class="notice">
@@ -44,7 +44,7 @@
         <h2 id="nextRenewalTitle" aria-live="polite">Loading renewal dates.</h2>
         <p id="nextRenewalDescription"></p>
       </div>
-      <button class="open" id="openFlow">Open task</button>
+      <button class="open" id="openFlow" aria-haspopup="dialog" aria-controls="sheet" aria-expanded="false">Open task</button>
     </section>
 
     <section class="proof" id="proofCard">
@@ -161,11 +161,11 @@
 
   <div class="sheet" id="sheet" aria-hidden="true">
     <div class="shade" id="closeFlow"></div>
-    <section class="panel" role="dialog" aria-modal="true" aria-labelledby="documentDialogTitle">
-      <button class="close" id="closeButton">Close</button>
+    <section class="panel" role="dialog" aria-modal="true" aria-labelledby="documentDialogTitle" aria-describedby="documentDialogDescription" tabindex="-1">
+      <button class="close" id="closeButton" type="button">Close</button>
       <p class="eyebrow">FOOD SERVICE PERMIT</p>
       <h2 id="documentDialogTitle">Verify a permit document.</h2>
-      <p class="lead">Civra checks the actual file signature before reading basic text or image metadata in an ephemeral sandbox. It will not submit your file.</p>
+      <p class="lead" id="documentDialogDescription">Civra checks the actual file signature before reading basic text or image metadata in an ephemeral sandbox. It will not submit your file.</p>
       <div class="check"><span class="checkmark">✓</span><div><strong>Business name</strong><p>Maya's Kitchen</p><small>From your business file</small></div></div>
       <div class="check"><span class="checkmark">✓</span><div><strong>Business address</strong><p>128 Orchard Street, New York, NY</p><small>From your lease</small></div></div>
       <label class="upload" for="ownerFile">
@@ -189,8 +189,8 @@
   </div>
 
   <div class="guide" id="guide" aria-hidden="true">
-    <div class="guidebox" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
-      <button class="close" id="closeGuide">Close</button>
+    <div class="guidebox" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-describedby="tourText" tabindex="-1">
+      <button class="close" id="closeGuide" type="button">Close</button>
       <p class="eyebrow">HOW TO USE CIVRA</p>
         <div class="tourprogress"><span class="tourbar1" id="tourBar"></span></div>
       <p class="tourcount" id="tourCount">Step 1 of 6</p>
@@ -208,13 +208,13 @@
   </div>
 
   <div class="guide" id="permitForm" aria-hidden="true">
-    <form class="guidebox" id="addPermitForm" role="dialog" aria-modal="true" aria-labelledby="permitFormTitle">
+    <form class="guidebox" id="addPermitForm" role="dialog" aria-modal="true" aria-labelledby="permitFormTitle" aria-describedby="permitFormDescription" tabindex="-1">
       <button class="close" id="closePermitForm" type="button">Close</button>
       <p class="eyebrow">ADD A PERMIT</p>
       <h2 id="permitFormTitle">What should Civra track?</h2>
       <label class="field">Permit name<input id="newPermitName" name="permitName" required maxlength="80" aria-describedby="permitNameHint" placeholder="Food Service Permit"><small id="permitNameHint">Use a short name that helps you recognize this reminder.</small></label>
       <label class="field">Due date<input id="newPermitDate" name="permitDate" required type="date" aria-describedby="permitDateHint"><small id="permitDateHint">Use the due date shown on your permit or notice.</small></label>
-      <p class="formnote">Civra saves this reminder in this browser only. It is not sent anywhere.</p>
+      <p class="formnote" id="permitFormDescription">Civra saves this reminder in this browser only. It is not sent anywhere.</p>
       <button class="continue" id="permitFormSubmit" type="submit">Save permit</button>
     </form>
   </div>

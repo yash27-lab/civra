@@ -785,6 +785,12 @@ function showAndFocus(element) {
   requestAnimationFrame(() => element.classList.add("focusflash"))
 }
 
+function setDialogTriggerExpanded(trigger, dialogId, expanded) {
+  if (trigger && trigger.getAttribute("aria-controls") === dialogId) {
+    trigger.setAttribute("aria-expanded", String(expanded))
+  }
+}
+
 function showTourStep() {
   const step = tourSteps[tourStep]
   tourTitle.textContent = step.title
@@ -799,6 +805,7 @@ function showTourStep() {
 
 function openSheet(returnFocus = document.activeElement) {
   sheetReturnFocus = returnFocus
+  setDialogTriggerExpanded(returnFocus, "sheet", true)
   sheet.classList.add("show")
   sheet.setAttribute("aria-hidden", "false")
   document.querySelector("#closeButton").focus()
@@ -807,6 +814,7 @@ function openSheet(returnFocus = document.activeElement) {
 function closeSheet() {
   sheet.classList.remove("show")
   sheet.setAttribute("aria-hidden", "true")
+  setDialogTriggerExpanded(sheetReturnFocus, "sheet", false)
   if (sheetReturnFocus && sheetReturnFocus.isConnected) sheetReturnFocus.focus()
   sheetReturnFocus = null
 }
@@ -825,6 +833,7 @@ function openRenewalForm(renewal = null, returnFocus = document.activeElement) {
     document.querySelector("#newPermitDate").value = renewal.dueDate
   }
   permitForm.classList.add("show")
+  setDialogTriggerExpanded(returnFocus, "permitForm", true)
   permitForm.setAttribute("aria-hidden", "false")
   document.querySelector("#newPermitName").focus()
 }
@@ -838,6 +847,7 @@ function closeRenewalForm() {
   permitForm.setAttribute("aria-hidden", "true")
   const returnFocus = permitFormReturnFocus
   permitFormReturnFocus = null
+  setDialogTriggerExpanded(returnFocus, "permitForm", false)
   if (returnFocus && returnFocus.isConnected) returnFocus.focus()
   else document.querySelector("#addPermit").focus()
 }
@@ -904,8 +914,12 @@ clearRenewals.addEventListener("click", () => {
 
 document.querySelectorAll(".nav").forEach(button => {
   button.addEventListener("click", () => {
-    document.querySelectorAll(".nav").forEach(item => item.classList.remove("active"))
+    document.querySelectorAll(".nav").forEach(item => {
+      item.classList.remove("active")
+      item.removeAttribute("aria-current")
+    })
     button.classList.add("active")
+    button.setAttribute("aria-current", "location")
     const page = button.dataset.page
     if (page === "home") window.scrollTo({ top: 0, behavior: "smooth" })
     if (page === "permits") showAndFocus(permitsCard)
@@ -919,11 +933,13 @@ function closeGuide() {
   guide.setAttribute("aria-hidden", "true")
   const returnFocus = guideReturnFocus
   guideReturnFocus = null
+  setDialogTriggerExpanded(returnFocus, "guide", false)
   if (returnFocus && returnFocus.isConnected) returnFocus.focus()
 }
 
 document.querySelector("#helpButton").addEventListener("click", event => {
   guideReturnFocus = event.currentTarget
+  setDialogTriggerExpanded(guideReturnFocus, "guide", true)
   tourStep = 0
   showTourStep()
   guide.classList.add("show")
@@ -944,6 +960,8 @@ tourNext.addEventListener("click", () => {
   }
   guide.classList.remove("show")
   guide.setAttribute("aria-hidden", "true")
+  setDialogTriggerExpanded(guideReturnFocus, "guide", false)
+  guideReturnFocus = null
   openSheet(document.querySelector("#helpButton"))
 })
 
