@@ -282,6 +282,27 @@ function buildRenewalCalendar(renewals) {
   return lines.map(foldIcsLine).join("\r\n") + "\r\n"
 }
 
+function downloadRenewalBackupFile() {
+  try {
+    const backup = buildRenewalBackup()
+    const blob = new Blob([JSON.stringify(backup, null, 2) + "\n"], {
+      type: "application/json;charset=utf-8"
+    })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = "civra-renewals-" + new Date().toISOString().slice(0, 10) + ".json"
+    link.hidden = true
+    document.body.append(link)
+    link.click()
+    link.remove()
+    window.setTimeout(() => window.URL.revokeObjectURL(url), 1000)
+    showToast(backup.reminders.length + " reminder" + (backup.reminders.length === 1 ? "" : "s") + " exported to a local backup.")
+  } catch {
+    showToast("Civra could not create the reminder backup in this browser.")
+  }
+}
+
 function downloadRenewalCalendar() {
   if (trackedRenewals.length === 0) {
     showToast("Add a renewal reminder before downloading a calendar.")
