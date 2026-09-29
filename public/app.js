@@ -263,7 +263,14 @@ function buildRenewalCalendar(renewals) {
   ]
 
   const nameOccurrences = new Map()
-  const calendarEntries = renewals.map(renewal => {
+  const stableOrder = [...renewals].sort((left, right) => {
+    const leftName = left.name.trim().toLowerCase()
+    const rightName = right.name.trim().toLowerCase()
+    if (leftName !== rightName) return leftName < rightName ? -1 : 1
+    if (left.dueDate !== right.dueDate) return left.dueDate < right.dueDate ? -1 : 1
+    return 0
+  })
+  const calendarEntries = stableOrder.map(renewal => {
     const key = renewal.name.trim().toLowerCase()
     const occurrence = nameOccurrences.get(key) || 0
     nameOccurrences.set(key, occurrence + 1)
