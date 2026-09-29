@@ -151,7 +151,7 @@ function localDate(value) {
 }
 
 function validRenewal(value) {
-  const name = String(value && value.name || "").trim()
+  const name = String(value && value.name || "").replace(/\s+/g, " ").trim()
   const dueDate = String(value && value.dueDate || "")
   const date = localDate(dueDate)
   const validDate = /^\d{4}-\d{2}-\d{2}$/.test(dueDate) && !Number.isNaN(date.valueOf()) &&
@@ -1133,7 +1133,7 @@ continueButton.addEventListener("click", async () => {
 
 addPermitForm.addEventListener("submit", event => {
   event.preventDefault()
-  const name = document.querySelector("#newPermitName").value.trim()
+  const name = document.querySelector("#newPermitName").value.replace(/\s+/g, " ").trim()
   const date = document.querySelector("#newPermitDate").value
   if (!name || !date) return
 
