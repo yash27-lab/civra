@@ -11,6 +11,10 @@ These states are prompts for an owner to review their permit, evidence, and city
 
 The current demo stores up to 50 reminder names and dates in the browser's local storage. Changes appear in other open Civra tabs in the same browser. Each reminder can be edited or removed on its own; the **Reset demo dates** button removes owner-added reminders and restores the sample dates. If a reminder changes in another open tab while its edit form is open, Civra asks the owner to reopen it rather than overwriting the newer value. Reminder data is not sent to the Civra server, shared across devices, or used to trigger notifications.
 
+## Local backup
+
+Owners can export a version 1 JSON file containing reminder names and due dates, then restore it in the same browser or another browser. Restore accepts up to 50 valid reminders from a file no larger than 128 KB, rejects duplicates and invalid dates, and validates the full file before replacing the current list. Civra asks before replacing existing reminders. The file is read in the browser and is never uploaded.
+
 ## Calendar export
 
 An owner can explicitly download an iCalendar (`.ics`) file containing all-day review events scheduled 30 days before each due date. If that review date has passed, the event is placed on the current day. Civra does not access a calendar account, import the file, or deliver a notification; the owner chooses whether and where to import it.
