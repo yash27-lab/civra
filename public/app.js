@@ -131,6 +131,16 @@ function renderTodayHeader() {
   greetingHeading.textContent = greeting + ", Maya."
 }
 
+function scheduleDailyRefresh() {
+  const now = new Date()
+  const nextLocalMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1)
+  window.setTimeout(() => {
+    renderTodayHeader()
+    renderRenewals()
+    scheduleDailyRefresh()
+  }, nextLocalMidnight.getTime() - now.getTime())
+}
+
 function localDate(value) {
   const [year, month, day] = String(value).split("-").map(Number)
   return new Date(year, month - 1, day)
@@ -1228,5 +1238,6 @@ window.addEventListener("storage", event => {
 
 renderTodayHeader()
 renderRenewals()
+scheduleDailyRefresh()
 syncSession()
 loadLiveProof()
