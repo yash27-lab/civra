@@ -175,6 +175,35 @@ function buildRenewalBackup(renewals = trackedRenewals, exportedAt = new Date().
   }
 }
 
+function parseRenewalBackup(text) {
+  let backup
+  try {
+    backup = JSON.parse(text)
+  } catch {
+    throw new Error("This file is not valid JSON.")
+  }
+
+  if (!backup || backup.schemaVersion !== 1 || !Array.isArray(backup.reminders)) {
+    throw new Error("This file is not a supported Civra renewal backup.")
+  }
+  if (backup.reminders.length > maxTrackedRenewals) {
+    throw new Error("A backup can contain no more than " + maxTrackedRenewals + " reminders.")
+  }
+
+  const renewals = backup.reminders.map(validRenewal)
+  if (renewals.some(renewal => !renewal)) {
+    throw new Error("Every reminder needs a name up to 80 characters and a valid due date.")
+  }
+
+  const seen = new Set()
+  for (const renewal of renewals) {
+    const key = renewal.name.toLowerCase() + "\n" + renewal.dueDate
+    if (seen.has(key)) throw new Error("This backup contains duplicate reminders.")
+    seen.add(key)
+  }
+  return renewals
+}
+
 function formatIcsDate(date) {
   const pad = value => String(value).padStart(2, "0")
   return String(date.getFullYear()) + pad(date.getMonth() + 1) + pad(date.getDate())
