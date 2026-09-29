@@ -61,6 +61,8 @@ const documentSummary = document.querySelector("#documentSummary")
 const documentMetadata = document.querySelector("#documentMetadata")
 const documentChecklist = document.querySelector("#documentChecklist")
 const documentRetention = document.querySelector("#documentRetention")
+const pageMain = document.querySelector("main")
+const sideNav = document.querySelector(".side")
 
 const maxFileBytes = 10 * 1024 * 1024
 const maxTrackedRenewals = 50
@@ -791,6 +793,44 @@ function setDialogTriggerExpanded(trigger, dialogId, expanded) {
   }
 }
 
+function setBackgroundInert(inert) {
+  pageMain.inert = inert
+  sideNav.inert = inert
+}
+
+function activeDialog() {
+  if (permitForm.classList.contains("show")) return addPermitForm
+  if (guide.classList.contains("show")) return guide.querySelector('[role="dialog"]')
+  if (sheet.classList.contains("show")) return sheet.querySelector('[role="dialog"]')
+  return null
+}
+
+function keepTabFocusInDialog(event) {
+  const dialog = activeDialog()
+  if (!dialog) return
+
+  const focusable = [...dialog.querySelectorAll(
+    'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+  )].filter(element => !element.closest("[hidden]") && element.getAttribute("aria-hidden") !== "true")
+
+  if (focusable.length === 0) {
+    event.preventDefault()
+    dialog.focus()
+    return
+  }
+
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  const focusOutsideDialog = !dialog.contains(document.activeElement)
+  if (event.shiftKey && (focusOutsideDialog || document.activeElement === first)) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && (focusOutsideDialog || document.activeElement === last)) {
+    event.preventDefault()
+    first.focus()
+  }
+}
+
 function showTourStep() {
   const step = tourSteps[tourStep]
   tourTitle.textContent = step.title
@@ -806,6 +846,7 @@ function showTourStep() {
 function openSheet(returnFocus = document.activeElement) {
   sheetReturnFocus = returnFocus
   setDialogTriggerExpanded(returnFocus, "sheet", true)
+  setBackgroundInert(true)
   sheet.classList.add("show")
   sheet.setAttribute("aria-hidden", "false")
   document.querySelector("#closeButton").focus()
@@ -814,6 +855,7 @@ function openSheet(returnFocus = document.activeElement) {
 function closeSheet() {
   sheet.classList.remove("show")
   sheet.setAttribute("aria-hidden", "true")
+  setBackgroundInert(false)
   setDialogTriggerExpanded(sheetReturnFocus, "sheet", false)
   if (sheetReturnFocus && sheetReturnFocus.isConnected) sheetReturnFocus.focus()
   sheetReturnFocus = null
@@ -834,6 +876,7 @@ function openRenewalForm(renewal = null, returnFocus = document.activeElement) {
   }
   permitForm.classList.add("show")
   setDialogTriggerExpanded(returnFocus, "permitForm", true)
+  setBackgroundInert(true)
   permitForm.setAttribute("aria-hidden", "false")
   document.querySelector("#newPermitName").focus()
 }
@@ -845,6 +888,7 @@ function closeRenewalForm() {
   document.querySelector("#permitFormSubmit").textContent = "Save permit"
   permitForm.classList.remove("show")
   permitForm.setAttribute("aria-hidden", "true")
+  setBackgroundInert(false)
   const returnFocus = permitFormReturnFocus
   permitFormReturnFocus = null
   setDialogTriggerExpanded(returnFocus, "permitForm", false)
@@ -928,9 +972,10 @@ document.querySelectorAll(".nav").forEach(button => {
     if (page === "history") showAndFocus(historyCard)
   })
 })
-function closeGuide() {
+function closeGuide({ releaseBackground = true } = {}) {
   guide.classList.remove("show")
   guide.setAttribute("aria-hidden", "true")
+  if (releaseBackground) setBackgroundInert(false)
   const returnFocus = guideReturnFocus
   guideReturnFocus = null
   setDialogTriggerExpanded(returnFocus, "guide", false)
@@ -940,6 +985,7 @@ function closeGuide() {
 document.querySelector("#helpButton").addEventListener("click", event => {
   guideReturnFocus = event.currentTarget
   setDialogTriggerExpanded(guideReturnFocus, "guide", true)
+  setBackgroundInert(true)
   tourStep = 0
   showTourStep()
   guide.classList.add("show")
@@ -958,10 +1004,7 @@ tourNext.addEventListener("click", () => {
     showTourStep()
     return
   }
-  guide.classList.remove("show")
-  guide.setAttribute("aria-hidden", "true")
-  setDialogTriggerExpanded(guideReturnFocus, "guide", false)
-  guideReturnFocus = null
+  closeGuide({ releaseBackground: false })
   openSheet(document.querySelector("#helpButton"))
 })
 
@@ -1253,6 +1296,10 @@ signOut.addEventListener("click", async () => {
 })
 
 document.addEventListener("keydown", event => {
+  if (event.key === "Tab") {
+    keepTabFocusInDialog(event)
+    return
+  }
   if (event.key !== "Escape") return
   if (guide.classList.contains("show")) {
     closeGuide()
