@@ -825,6 +825,9 @@ closeSourceEvidence.addEventListener("click", hideSourceEvidence)
 compareSourceEvidence.addEventListener("click", loadSourceComparison)
 downloadSourceReview.addEventListener("click", downloadSourceReviewPacket)
 downloadRenewals.addEventListener("click", downloadRenewalCalendar)
+downloadRenewalBackup.addEventListener("click", downloadRenewalBackupFile)
+restoreRenewalBackupButton.addEventListener("click", () => renewalBackupInput.click())
+renewalBackupInput.addEventListener("change", () => restoreRenewalBackupFile(renewalBackupInput.files[0]))
 renewalQueue.addEventListener("click", event => {
   const editButton = event.target.closest(".renewal-edit")
   if (editButton) {
