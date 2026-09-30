@@ -150,8 +150,15 @@ function localDate(value) {
   return new Date(year, month - 1, day)
 }
 
+function normalizeRenewalName(value) {
+  return String(value ?? "")
+    .replace(/[\u0000-\u001f\u007f-\u009f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
 function validRenewal(value) {
-  const name = String(value && value.name || "").replace(/\s+/g, " ").trim()
+  const name = normalizeRenewalName(value && value.name)
   const dueDate = String(value && value.dueDate || "")
   const date = localDate(dueDate)
   const validDate = /^\d{4}-\d{2}-\d{2}$/.test(dueDate) && !Number.isNaN(date.valueOf()) &&
@@ -1164,7 +1171,7 @@ continueButton.addEventListener("click", async () => {
 
 addPermitForm.addEventListener("submit", event => {
   event.preventDefault()
-  const name = document.querySelector("#newPermitName").value.replace(/\s+/g, " ").trim()
+  const name = normalizeRenewalName(document.querySelector("#newPermitName").value)
   const date = document.querySelector("#newPermitDate").value
   if (!name) {
     showToast("Enter a permit name before saving.")
