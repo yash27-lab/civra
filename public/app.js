@@ -300,6 +300,7 @@ function buildRenewalCalendar(renewals) {
         "DTSTART;VALUE=DATE:" + formatIcsDate(reviewDate),
         "DTEND;VALUE=DATE:" + formatIcsDate(endDate),
         "TRANSP:TRANSPARENT",
+        "CATEGORIES:RENEWAL REVIEW",
         "SUMMARY:" + icsEscape("Review renewal: " + renewal.name),
         "DESCRIPTION:" + icsEscape("Tracked due date: " + renewal.dueDate + ". This event is a prompt for owner review only. Civra will not submit, pay, or notify anyone."),
         "END:VEVENT"
