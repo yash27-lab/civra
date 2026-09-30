@@ -337,7 +337,7 @@ async function restoreRenewalBackupFile(file) {
   renewalBackupStatus.textContent = "Checking the selected backup file."
   try {
     if (file.size > maxRenewalBackupBytes) {
-      throw new Error("Choose a backup smaller than 128 KB.")
+      throw new Error("Choose a backup that is 128 KB or smaller.")
     }
     const renewals = parseRenewalBackup(await file.text())
     if (trackedRenewals.length > 0 && !window.confirm("Replace the " + trackedRenewals.length + " current reminders with " + renewals.length + " reminders from this backup?")) {
