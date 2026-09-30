@@ -497,10 +497,17 @@ function renderRenewals() {
   }
 
   downloadRenewals.disabled = false
-  const needsReview = ordered.filter(renewal => renewal.days <= 30).length
-  renewalSummary.textContent = needsReview
-    ? `${needsReview} renewal${needsReview === 1 ? "" : "s"} ${needsReview === 1 ? "needs" : "need"} owner review in the next 30 days.`
-    : "No tracked renewal needs owner review in the next 30 days."
+  const overdueCount = ordered.filter(renewal => renewal.days < 0).length
+  const dueSoonCount = ordered.filter(renewal => renewal.days >= 0 && renewal.days <= 30).length
+  if (overdueCount && dueSoonCount) {
+    renewalSummary.textContent = `${overdueCount} renewal${overdueCount === 1 ? " is" : "s are"} overdue; ${dueSoonCount} more ${dueSoonCount === 1 ? "is" : "are"} due within 30 days.`
+  } else if (overdueCount) {
+    renewalSummary.textContent = `${overdueCount} renewal${overdueCount === 1 ? " is" : "s are"} overdue.`
+  } else if (dueSoonCount) {
+    renewalSummary.textContent = `${dueSoonCount} renewal${dueSoonCount === 1 ? " needs" : "s need"} owner review in the next 30 days.`
+  } else {
+    renewalSummary.textContent = "No upcoming tracked renewal is due within 30 days."
+  }
 
   for (const renewal of ordered) {
     const state = renewalState(renewal.days)
