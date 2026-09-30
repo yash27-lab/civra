@@ -973,12 +973,14 @@ clearRenewals.addEventListener("click", () => {
     renewalBackupStatus.textContent = "Reset canceled. Your reminders were kept."
     return
   }
-  trackedRenewals = defaultRenewals.map(renewal => ({ ...renewal }))
   try {
     window.localStorage.removeItem(renewalStorageKey)
   } catch {
-    // The visible queue still resets even if this browser blocks local storage.
+    renewalBackupStatus.textContent = "Civra could not reset the saved reminders. Your current reminders were kept."
+    showToast("Civra could not reset reminders. Your current list was kept.")
+    return
   }
+  trackedRenewals = defaultRenewals.map(renewal => ({ ...renewal }))
   renderRenewals()
   showToast("Demo renewal dates were restored in this browser.")
 })
