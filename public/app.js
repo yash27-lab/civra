@@ -372,7 +372,7 @@ function downloadRenewalCalendar() {
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
-    link.download = "civra-renewal-review.ics"
+    link.download = "civra-renewal-review-" + localDateKey() + ".ics"
     link.hidden = true
     document.body.append(link)
     link.click()
