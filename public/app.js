@@ -982,6 +982,7 @@ clearRenewals.addEventListener("click", () => {
   }
   trackedRenewals = defaultRenewals.map(renewal => ({ ...renewal }))
   renderRenewals()
+  renewalBackupStatus.textContent = "Demo reminder dates were restored in this browser."
   showToast("Demo renewal dates were restored in this browser.")
 })
 
