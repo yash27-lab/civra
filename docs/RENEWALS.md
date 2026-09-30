@@ -17,6 +17,6 @@ Owners can export a version 1 JSON file containing reminder names and due dates,
 
 ## Calendar export
 
-An owner can explicitly download an iCalendar (`.ics`) file containing transparent all-day review events scheduled 30 days before each due date, so the reminders do not mark calendar time as busy. If that review date has passed, the event is placed on the current day. Event identifiers stay stable when the same reminders are exported in a different order. Civra does not access a calendar account, import the file, or deliver a notification; the owner chooses whether and where to import it.
+An owner can explicitly download an iCalendar (`.ics`) file containing transparent all-day review events scheduled 30 days before each due date, so the reminders do not mark calendar time as busy. Each event description includes its tracked due date. If that review date has passed, the event is placed on the current day. Event identifiers stay stable when the same reminders are exported in a different order. Civra does not access a calendar account, import the file, or deliver a notification; the owner chooses whether and where to import it.
 
 Production reminders need durable owner-approved storage, an explicit cross-device synchronization design, and opt-in before any email or notification delivery.
