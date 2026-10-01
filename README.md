@@ -62,8 +62,10 @@ worse than no answer.
   sandbox is destroyed after every attempt, deleting its temporary file.
 - Paid automation is gated by an HttpOnly, SameSite cookie, a server-only
   access code, per-session permit and document limits, a one-at-a-time sandbox
-  limit, cached city checks, and failure cooldowns. The owner sees remaining
-  check budgets before starting another paid action.
+  limit, cached city checks, and failure cooldowns. Locking the browser clears
+  the selected document and displayed result, and late responses from the
+  previous session are ignored. The owner sees remaining check budgets before
+  starting another paid action.
 - The owner dashboard tracks up to 50 renewal reminders in this browser,
   updates other open tabs, lets owners remove individual reminders, and can
   download a local calendar review file. The next-step card follows the
