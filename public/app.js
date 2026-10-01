@@ -312,7 +312,7 @@ function buildRenewalCalendar(renewals) {
         "TRANSP:TRANSPARENT",
         "CATEGORIES:RENEWAL REVIEW",
         "SUMMARY:" + icsEscape("Review renewal: " + renewal.name),
-        "DESCRIPTION:" + icsEscape("Tracked due date: " + renewal.dueDate + ". This event is a prompt for owner review only. Civra will not submit, pay, or notify anyone."),
+        "DESCRIPTION:" + icsEscape("Created locally by Civra for owner review only. Tracked due date: " + renewal.dueDate + ". Civra will not submit, pay, or notify anyone."),
         "END:VEVENT"
       )
     })
@@ -513,7 +513,7 @@ function renderRenewals() {
   if (overdueCount && dueSoonCount) {
     renewalSummary.textContent = `${overdueCount} renewal${overdueCount === 1 ? " is" : "s are"} overdue; ${dueSoonCount} more ${dueSoonCount === 1 ? "is" : "are"} due within 30 days.`
   } else if (overdueCount) {
-    renewalSummary.textContent = `${overdueCount} renewal${overdueCount === 1 ? " is" : "s are"} overdue.`
+    renewalSummary.textContent = `${overdueCount} renewal${overdueCount === 1 ? " is" : "s are"} overdue and ${overdueCount === 1 ? "needs" : "need"} owner review.`
   } else if (dueSoonCount) {
     renewalSummary.textContent = `${dueSoonCount} renewal${dueSoonCount === 1 ? " needs" : "s need"} owner review in the next 30 days.`
   } else {
