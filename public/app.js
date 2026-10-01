@@ -106,6 +106,9 @@ let toastTimer
 let selectedFile = null
 let editingRenewal = null
 let sessionOpen = false
+let sessionGeneration = 0
+let activeDocumentCheckController = null
+let sourceHistoryRequest = 0
 let sheetReturnFocus = null
 let guideReturnFocus = null
 let permitFormReturnFocus = null
@@ -782,6 +785,8 @@ async function loadSourceComparison() {
 }
 
 async function loadSourceHistory() {
+  const requestId = ++sourceHistoryRequest
+  const requestedSession = sessionGeneration
   if (!sessionOpen) {
     sourceHistoryStatus.textContent = "Unlock Civra to review recorded source history."
     sourceHistoryList.replaceChildren()
@@ -793,9 +798,11 @@ async function loadSourceHistory() {
   try {
     const response = await fetch("/api/source-history")
     const result = await response.json()
+    if (!sessionOpen || requestedSession !== sessionGeneration || requestId !== sourceHistoryRequest) return
     if (!response.ok) throw new Error(result.message || "Civra could not load source history.")
     renderSourceHistory(Array.isArray(result.snapshots) ? result.snapshots : [])
   } catch (error) {
+    if (!sessionOpen || requestedSession !== sessionGeneration || requestId !== sourceHistoryRequest) return
     sourceHistoryList.replaceChildren()
     sourceHistoryStatus.textContent = error instanceof Error ? error.message : "Civra could not load source history."
   }
@@ -1053,6 +1060,7 @@ function updateDocumentButton() {
 function clearSelectedFile() {
   selectedFile = null
   fileInput.value = ""
+  continueButton.textContent = "Verify document"
   updateDocumentButton()
 }
 
@@ -1137,6 +1145,9 @@ continueButton.addEventListener("click", async () => {
   }
 
   let file = selectedFile
+  const requestSession = sessionGeneration
+  const controller = new AbortController()
+  activeDocumentCheckController = controller
   selectedFile = null
   continueButton.disabled = true
   continueButton.textContent = "Verifying file in a private sandbox…"
@@ -1149,9 +1160,11 @@ continueButton.addEventListener("click", async () => {
         "Content-Type": "application/octet-stream",
         "X-Civra-Action": "document-check"
       },
-      body: file
+      body: file,
+      signal: controller.signal
     })
     const result = await response.json()
+    if (!sessionOpen || requestSession !== sessionGeneration || activeDocumentCheckController !== controller) return
     if (!response.ok) throw new Error(result.message || "Civra could not verify this file.")
     showDocumentResult(result)
     const remaining = Number.isInteger(result.remainingDocumentChecks)
@@ -1159,13 +1172,14 @@ continueButton.addEventListener("click", async () => {
       : ""
     fileOk.textContent = "Document checked. Review the evidence below." + remaining
   } catch (error) {
+    if (controller.signal.aborted || !sessionOpen || requestSession !== sessionGeneration) return
     fileOk.textContent = error instanceof Error ? error.message : "Civra could not verify this file."
   } finally {
-    // The browser selection is cleared after every attempt; the server never
-    // writes the file to disk and destroys its sandbox after processing.
     file = null
-    clearSelectedFile()
-    continueButton.textContent = "Verify document"
+    if (activeDocumentCheckController === controller) {
+      activeDocumentCheckController = null
+      clearSelectedFile()
+    }
   }
 })
 
@@ -1215,6 +1229,8 @@ addPermitForm.addEventListener("submit", event => {
   )
 })
 liveCheck.addEventListener("click", async () => {
+  if (!sessionOpen) return
+  const requestSession = sessionGeneration
   liveCheck.disabled = true
   liveStatus.textContent = "Solari is checking the official city page."
 
@@ -1224,6 +1240,7 @@ liveCheck.addEventListener("click", async () => {
       headers: { "X-Civra-Action": "permit-check" }
     })
     const result = await response.json()
+    if (!sessionOpen || requestSession !== sessionGeneration) return
     if (!response.ok) throw new Error(result.message || "The city check failed.")
 
     if (!result.pageVerified) {
@@ -1249,14 +1266,27 @@ liveCheck.addEventListener("click", async () => {
       : `Live check done. ${found} found and ${missing} not found on the city page. Please review.${note}${budgetNote}${snapshotNote}`
     loadSourceHistory()
   } catch (error) {
-    liveStatus.textContent = error instanceof Error ? error.message : "The city check failed."
+    if (sessionOpen && requestSession === sessionGeneration) {
+      liveStatus.textContent = error instanceof Error ? error.message : "The city check failed."
+    }
   } finally {
-    liveCheck.disabled = false
+    if (sessionOpen && requestSession === sessionGeneration) liveCheck.disabled = false
   }
 })
 
 function showSession(session) {
-  sessionOpen = Boolean(session && session.authenticated)
+  const nextSessionOpen = Boolean(session && session.authenticated)
+  if (sessionOpen && !nextSessionOpen) {
+    sessionGeneration += 1
+    if (activeDocumentCheckController) {
+      activeDocumentCheckController.abort()
+      activeDocumentCheckController = null
+    }
+    clearSelectedFile()
+    clearDocumentReport()
+    fileOk.textContent = "Civra was locked; the selected file and result were cleared."
+  }
+  sessionOpen = nextSessionOpen
   liveCheck.disabled = !sessionOpen
   accessForm.hidden = sessionOpen
   signOut.hidden = !sessionOpen
@@ -1326,15 +1356,14 @@ accessForm.addEventListener("submit", async event => {
 })
 
 signOut.addEventListener("click", async () => {
-  clearSelectedFile()
-  clearDocumentReport()
-  fileOk.textContent = "Civra was locked; the selected file and result were cleared."
+  showSession({ authenticated: false })
   try {
     const response = await fetch("/api/session", { method: "DELETE" })
+    if (!response.ok) throw new Error("Civra could not confirm server sign-out.")
     const result = await response.json()
     showSession(result)
   } catch {
-    showSession({ authenticated: false })
+    liveStatus.textContent = "Civra locked this page, but could not confirm server sign-out."
   }
 })
 
