@@ -981,13 +981,7 @@ renewalQueue.addEventListener("click", event => {
   )
 })
 clearRenewals.addEventListener("click", () => {
-  const customRenewals = trackedRenewals.filter(renewal => !defaultRenewals.some(example =>
-    example.name === renewal.name && example.dueDate === renewal.dueDate
-  ))
-  if (customRenewals.length > 0 && !window.confirm(`Reset demo dates and remove ${customRenewals.length} custom reminder${customRenewals.length === 1 ? "" : "s"}?`)) {
-    renewalBackupStatus.textContent = "Reset canceled. Your reminders were kept."
-    return
-  }
+
   try {
     window.localStorage.removeItem(renewalStorageKey)
   } catch {
